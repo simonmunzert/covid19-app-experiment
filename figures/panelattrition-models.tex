@@ -1,0 +1,44 @@
+
+\begin{table}[h!]
+\caption{Probit models of panel attrition. Outcome is coded 1 if respondent drops out before respective wave. The model resported in the last column is restricted to participants who report of not having installed the app in Wave 2 and therefore qualify for one of the treatment groups in the incentivization experiment.}
+\begin{center}
+\begin{tabular}{l D{)}{)}{9)3} D{)}{)}{9)3} D{)}{)}{9)3}}
+\toprule
+ & \multicolumn{1}{c}{W2 dropout} & \multicolumn{1}{c}{W3 dropout} & \multicolumn{1}{c}{\shortstack{W3 dropout, \\ app non-users}} \\
+\midrule
+Intercept                    & 0.16 \; (0.23)        & -0.22 \; (0.25)       & -0.12 \; (0.33)       \\
+Tracking sample              & -0.26 \; (0.09)^{**}  & -0.09 \; (0.09)       & -0.16 \; (0.13)       \\
+Attitudes towards app        & -0.01 \; (0.05)       & -0.01 \; (0.06)       & -0.09 \; (0.08)       \\
+App knowledge                & -0.09 \; (0.04)^{*}   & -0.03 \; (0.04)       & 0.00 \; (0.05)        \\
+App installed                & 0.09 \; (0.10)        & 0.10 \; (0.11)        &                       \\
+Message treatment W1         & 0.11 \; (0.09)        & 0.04 \; (0.10)        & 0.08 \; (0.13)        \\
+Incentivization treatment W2 &                       &                       & 0.11 \; (0.14)        \\
+Incentivization agreement W2 &                       &                       & -0.20 \; (0.14)       \\
+Age/10                       & -0.24 \; (0.03)^{***} & -0.18 \; (0.03)^{***} & -0.22 \; (0.05)^{***} \\
+Gender: Female               & 0.03 \; (0.08)        & 0.08 \; (0.09)        & -0.13 \; (0.12)       \\
+Education: Medium            & 0.14 \; (0.11)        & 0.03 \; (0.12)        & 0.16 \; (0.15)        \\
+Education: High              & 0.08 \; (0.11)        & 0.01 \; (0.12)        & 0.01 \; (0.16)        \\
+HH income: Medium            & -0.09 \; (0.10)       & -0.11 \; (0.11)       & -0.26 \; (0.14)       \\
+HH income: High              & -0.16 \; (0.11)       & 0.12 \; (0.11)        & 0.04 \; (0.15)        \\
+Children                     & 0.09 \; (0.09)        & 0.07 \; (0.09)        & 0.05 \; (0.12)        \\
+Trust in government          & -0.09 \; (0.05)       & -0.04 \; (0.05)       & 0.05 \; (0.07)        \\
+Trust in scientists          & -0.01 \; (0.05)       & 0.04 \; (0.06)        & 0.04 \; (0.07)        \\
+Trust in HC system           & -0.01 \; (0.05)       & -0.07 \; (0.06)       & -0.12 \; (0.07)       \\
+COVID threat: Self           & 0.07 \; (0.07)        & -0.06 \; (0.07)       & -0.07 \; (0.09)       \\
+COVID threat: Family/Friends & 0.01 \; (0.07)        & 0.03 \; (0.07)        & 0.09 \; (0.09)        \\
+Social responsibility        & -0.00 \; (0.04)       & 0.06 \; (0.05)        & 0.07 \; (0.06)        \\
+Self interest                & -0.04 \; (0.04)       & -0.03 \; (0.05)       & 0.00 \; (0.06)        \\
+Data control                 & -0.12 \; (0.05)^{*}   & -0.01 \; (0.05)       & -0.00 \; (0.07)       \\
+Digital literacy             & 0.05 \; (0.04)        & -0.02 \; (0.04)       & -0.08 \; (0.06)       \\
+\midrule
+AIC                          & 1342.90               & 1169.00               & 704.91                \\
+BIC                          & 1464.55               & 1287.71               & 815.97                \\
+Log Likelihood               & -649.45               & -562.50               & -329.46               \\
+Deviance                     & 1298.90               & 1125.00               & 658.91                \\
+Num. obs.                    & 1862                  & 1629                  & 924                   \\
+\bottomrule
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}
+\end{tabular}
+\label{tab:panelattrition-models}
+\end{center}
+\end{table}
