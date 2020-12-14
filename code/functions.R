@@ -10,6 +10,17 @@ display <- function(num, pct=FALSE){
   if (pct) return(sprintf("%.1f", num*100))
 }
 
+# function to print p values 0.00 as <0.01 ----
+minsig_fixer <- function(x, digits = 2, latex = FALSE){
+  if(latex == TRUE){
+    latexsign <- "$<$"
+  }else{
+    latexsign <- "<"
+  }
+  round(x, digits) %>% sprintf(paste0("%.", digits, "f"), .) %>% str_replace(paste0("^0\\.", paste0(rep(0, digits), collapse = "")), paste0(latexsign, "0.", paste0(rep(0, digits-1), collapse = ""), "1"))
+}
+
+
 
 # function to run ITT with LASSO ----
 itt_lasso <- function(dv, dv_pre = NULL, covars = NULL, treat_var = NULL, treat_drop = "none", data = NULL, seed = 123, more_vars = NULL, verbose = TRUE) {
@@ -53,6 +64,7 @@ itt_lasso <- function(dv, dv_pre = NULL, covars = NULL, treat_var = NULL, treat_
   if(verbose){
     message("--- ITT/LASSO RESULTS ---")
     message("Estimate: ", display(coef(lin_model)[2]))
+    message("P-value: ", display(lin_model$p.value[2]))
     message("Std. Error: ", display(sqrt(vcov(lin_model)[2,2])))
     message("CI Lower: ", display(confint(lin_model)[2,1]))
     message("CI Upper: ", display(confint(lin_model)[2,2]))
@@ -252,11 +264,28 @@ heterogeneous_itt <- function(dv, dv_pre = NULL, covars = NULL, trt, moderator, 
   lin_model <- lm_lin(lin_formula, covariates = lin_covars, data = data)
   # extract t stat for interaction
   interaction_t <- lin_model$statistic[grep(paste0(":", moderator), names(lin_model$statistic))]
+  interaction_est <- lin_model$coefficients[grep(paste0(":", moderator), names(lin_model$statistic))]
+  interaction_df <- lin_model$df[grep(paste0(":", moderator), names(lin_model$statistic))]
+  interaction_pval <- lin_model$p.value[grep(paste0(":", moderator), names(lin_model$statistic))]
+  interaction_conflow <- lin_model$conf.low[grep(paste0(":", moderator), names(lin_model$statistic))]
+  interaction_confhigh <- lin_model$conf.high[grep(paste0(":", moderator), names(lin_model$statistic))]
   sig <- ifelse(
     interaction_t > 1.96, "+",
     ifelse(interaction_t < (-1.96), "-", "n.s.")
   )
-  return(list(lin_model, sig))
+  res <- data.frame(
+    itt_eff = sprintf("%.2f",round(interaction_est, 2)),
+    itt_ci = paste0("[", sprintf("%.2f",round(interaction_conflow, 2)), ", ", sprintf("%.2f",round(interaction_confhigh, 2)), "]"),
+    itt_pval = minsig_fixer(round(interaction_pval, 2), latex = TRUE)
+  )
+  res_not_format <- data.frame(
+    itt_eff = interaction_est,
+    itt_ci_low = interaction_conflow,
+    itt_ci_high = interaction_confhigh,
+    itt_pval = interaction_pval
+  )
+  
+  return(list(lin_model, sig, res,res_not_format))
 }
 
 

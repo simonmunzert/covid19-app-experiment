@@ -87,10 +87,12 @@ form <- as.formula(paste0("tracking_panel_survey", " ~ ", paste0(c("age_cat.1", 
 into_survey <- lm(form, data = filter(ger_df_wide, sample_type.1 != "surveyonly"), na.action = na.exclude)
 
 # labels
-varlabels <- c("Intercept", "Age: 30-39ys", "Age: 40-49ys", "Age: 50-59ys", "Age: 60+ys", "Gender: Female", "Education: Medium", "Education: High", "Control access to personal information", "Government protects my privacy", "Concerned about companies accessing data", "Data Literacy")
+varlabels <- c("Intercept", "Age: 30-39yrs", "Age: 40-49yrs", "Age: 50-59yrs", "Age: 60+yrs", "Gender: Female", "Education: Medium", "Education: High", "Control access to personal information", "Government protects my privacy", "Concerned about companies accessing data", "Data Literacy")
 
 # export
-texreg(list(into_tracking, into_survey), custom.coef.names = varlabels, custom.model.names = c("Tracking panel", "Tracking survey"), booktabs = TRUE, caption.above = TRUE, caption = "Model of selection into tracking panel and into survey among tracking panelists", float.pos = "t!h", label = "tab:selectionintotrackingsurvey", use.packages = FALSE, dcolumn = TRUE, file = "../figures/selectionintotrackingsurvey.tex")
+texreg(list(into_tracking, into_survey), custom.coef.names = varlabels, custom.model.names = c("Tracking panel", "Tracking survey"), single.row = TRUE, stars = numeric(0), booktabs = TRUE, caption.above = TRUE, caption = "Model of selection into tracking panel and into survey among tracking panelists", float.pos = "t!h", label = "tab:selectionintotrackingsurvey", use.packages = FALSE, dcolumn = TRUE, file = "../figures/selectionintotrackingsurvey.tex")
+
+
 
 
 
@@ -116,7 +118,7 @@ outcome_labels <- c("W2 dropout", "W3 dropout", "\\shortstack{W3 dropout, \\\\ a
 varlabels <- c("Intercept", "Tracking sample", "Attitudes towards app", "App knowledge", "App installed", "Message treatment W1", covars_adapted_df$var_label[covars_adapted_df$category %in% c("Sociodemographics", "Motivational factors")], "Incentivization treatment W2", "Incentivization agreement W2") %>%
   str_replace("\\n", " ") %>% str_replace("Household", "HH") %>% str_replace(" perception", "") %>% str_replace(" Family and Friends", " Family/Friends")
 
-texreg(list(out_w2, out_w3, out_w3_incentonly), single.row = TRUE, custom.model.names = outcome_labels, custom.coef.names = varlabels, reorder.coef = c(1:6, 23:24, 7:22), booktabs = TRUE, caption.above = TRUE, caption = "Probit models of panel attrition. Outcome is coded 1 if respondent drops out before respective wave. The model resported in the last column is restricted to participants who report of not having installed the app in Wave 2 and therefore qualify for one of the treatment groups in the incentivization experiment.", float.pos = "h!", label = "tab:panelattrition-models", dcolumn = TRUE, use.packages = FALSE, file = "../figures/panelattrition-models.tex")
+texreg(list(out_w2, out_w3, out_w3_incentonly), single.row = TRUE, stars = numeric(0), custom.model.names = outcome_labels, custom.coef.names = varlabels, reorder.coef = c(1:6, 23:24, 7:22), booktabs = TRUE, caption.above = TRUE, caption = "Probit models of panel attrition. Outcome is coded 1 if respondent drops out before respective wave. The model reported in the last column is restricted to participants who report of not having installed the app in Wave 2 and therefore qualify for one of the treatment groups in the incentivization experiment.", float.pos = "h!", label = "tab:panelattrition-models", dcolumn = TRUE, use.packages = FALSE, file = "../figures/panelattrition-models.tex")
 
 
 # model of tracked app installation age-digital literacy interaction (pre-treatment) -------------
@@ -130,11 +132,11 @@ form <- as.formula(paste0("app_rep_installed_at_w1 ~ age_cat5.1*digliteracy_scor
 summary(app_rep_age_diglit <- lm(form, data = ger_df_wide))
 
 varlabels <- c("Intercept", 
-               "Age: 30-39ys", "Age: 40-49ys", "Age: 50-59ys", "Age: 60+ys", 
+               "Age: 30-39yrs", "Age: 40-49yrs", "Age: 50-59yrs", "Age: 60+yrs", 
                "Digital literacy: High", 
-               "Age: 30-39ys X Digital literacy: High", "Age: 40-49ys X Digital literacy: High", "Age: 50-59ys X Digital literacy: High", "Age: 60+ys X Digital literacy: High") 
+               "Age: 30-39yrs X Digital literacy: High", "Age: 40-49yrs X Digital literacy: High", "Age: 50-59yrs X Digital literacy: High", "Age: 60+yrs X Digital literacy: High") 
 
-texreg(list(app_track_age_diglit), single.row = TRUE, custom.model.names = c("Tracked uptake"), custom.coef.names = varlabels, booktabs = TRUE, caption.above = TRUE, caption = "Linear model of tracked app usage as a function of age and digital literacy.", float.pos = "h!t", label = "tab:app-track-use-age-diglit-model", dcolumn = TRUE, use.packages = FALSE, file = "../figures/app-track-use-age-diglit-model.tex")
+texreg(list(app_track_age_diglit), single.row = TRUE, stars = numeric(0), custom.model.names = c("Tracked uptake"), custom.coef.names = varlabels, booktabs = TRUE, caption.above = TRUE, caption = "Linear model of tracked app usage as a function of age and digital literacy.", float.pos = "h!t", label = "tab:app-track-use-age-diglit-model", dcolumn = TRUE, use.packages = FALSE, file = "../figures/app-track-use-age-diglit-model.tex")
 
 # additional crosstabs
 with(ger_df_wide, prop.table(table(app_track_installed_at_w1, age_cat5.1), 2))
@@ -281,6 +283,73 @@ ggplot(no_install_df, aes(var_label_eng, value)) +
   coord_flip()
 dev.off()
 
+
+
+
+# compute t-tests for group differences in app uptake ----------------
+
+# subset to survey-tracking sample
+ger_df_wide_surveytracking <- filter(ger_df_wide, sample_type.1 == "surveytracking")
+
+# age
+t.test(app_track_installed_before_w1 ~ age_cat2.1, data = ger_df_wide_surveytracking)
+
+# precondition
+t.test(app_track_installed_before_w1 ~ precond_cat2.1, data = ger_df_wide_surveytracking)
+
+# education
+t.test(app_track_installed_before_w1 ~ educ_cat3.1, data = filter(ger_df_wide_surveytracking, educ_cat3.1 != "Medium"))
+
+# household income
+t.test(app_track_installed_before_w1 ~ hhinc_cat3.1, data = filter(ger_df_wide_surveytracking, hhinc_cat3.1 != "1.5-3k"))
+
+# gender
+t.test(app_track_installed_before_w1 ~ gender_cat2.1, data = ger_df_wide_surveytracking)
+
+# children
+t.test(app_track_installed_before_w1 ~ children_cat2.1, data = ger_df_wide_surveytracking)
+
+# public transport
+t.test(app_track_installed_before_w1 ~ behav_pubtransport_cat2.1, data = ger_df_wide_surveytracking)
+
+# restaurants
+t.test(app_track_installed_before_w1 ~ behav_restaurant_cat2.1, data = ger_df_wide_surveytracking)
+
+# friend/family visit
+t.test(app_track_installed_before_w1 ~ behav_visitfriends_cat2.1, data = ger_df_wide_surveytracking)
+
+# NPI compliance
+t.test(app_track_installed_before_w1 ~ aha_compliance_cat2.1, data = ger_df_wide_surveytracking)
+
+# covid case in network
+t.test(app_track_installed_before_w1 ~ covidcase_cat2.1, data = ger_df_wide_surveytracking)
+
+# trust in gov
+t.test(app_track_installed_before_w1 ~ trust_gov_cat2.1, data = ger_df_wide_surveytracking)
+
+# trust in science
+t.test(app_track_installed_before_w1 ~ trust_sci_cat2.1, data = ger_df_wide_surveytracking)
+
+# trust in health care system
+t.test(app_track_installed_before_w1 ~ trust_hcs_cat2.1, data = ger_df_wide_surveytracking)
+
+# threat to self
+t.test(app_track_installed_before_w1 ~ covidconcerned_self_cat2.1, data = ger_df_wide_surveytracking)
+
+# threat to family/friends
+t.test(app_track_installed_before_w1 ~ covidconcerned_famf_cat2.1, data = ger_df_wide_surveytracking)
+
+# social responsibility
+t.test(app_track_installed_before_w1 ~ socresp_score_cat3.1, data = filter(ger_df_wide_surveytracking, socresp_score_cat3.1 != "Medium"))
+
+# self-interest
+t.test(app_track_installed_before_w1 ~ selfint_score_cat3.1, data = filter(ger_df_wide_surveytracking, selfint_score_cat3.1 != "Medium"))
+              
+# digital literacy
+t.test(app_track_installed_before_w1 ~ digliteracy_score_cat2.1, data = ger_df_wide_surveytracking)
+
+# data control
+t.test(app_track_installed_before_w1 ~ datacontrol_score_cat2.1, data = ger_df_wide_surveytracking)
 
 
 
@@ -903,28 +972,27 @@ dev.off()
 
 # cumulative time-series of first app usage, together with survey timings -------------------
 
+t.test(app_track_installed_before_w1 ~ sample_type.1, data = filter(ger_df_wide, sample_type.1 != "surveyonly"))
+
 # field times
 (fieldtime_w1 <- range(ger_df_wide$StartDate.1, na.rm = TRUE))
 (fieldtime_w2 <- range(ger_df_wide$StartDate.2, na.rm = TRUE))
 (fieldtime_w3 <- range(ger_df_wide$StartDate.3, na.rm = TRUE))
 
-# identify unique obs
-apple_remove == TRUE
-if(apple_remove == TRUE){
+# identify unique obs, remove apple devices
 tracking_df_unique <- distinct(tracking_df_all, id, .keep_all = TRUE) %>% filter(device_manufacturer != "Apple")
-}else{
-  tracking_df_unique <- distinct(tracking_df_all, id, .keep_all = TRUE) 
-  tracking_df_unique$apple <- tracking_df_unique$device_manufacturer == "Apple"
-}
 
 # merge treatment status to tracking data
 treat_df <- dplyr::select(ger_df_wide, id, treat.1, treat_incent.2, app_install.2, wave.1, wave.2, wave.3)
 tracking_df_unique <- merge(tracking_df_unique, treat_df, by.x = "id", by.y = "id")
 
 # compute cumulative time series
-generate_ts <- function(data) {
+# replace with start_date = "2020/06/16", end_date = "2020/09/22" for original study period
+# replace with start_date = "2020/06/16", end_date = "2020/11/02" for full tracking data
+# replace with start_date = "2020/10/01", end_date = "2020/11/02" for after-study period
+generate_ts <- function(data, start_date = "2020/06/16", end_date = "2020/09/22") { 
   install_dates <- sort(data[,"track_date_first_install"][data[,"track_date_first_install"] != as.Date("9999-01-01")])
-  dates <- seq(as.Date("2020/06/16"), as.Date("2020/09/22"), by = "day") # replace with 2020/11/02 for full tracking data or with 2020/09/22 for study time frame
+  dates <- seq(as.Date(start_date), as.Date(end_date), by = "day") 
   count <- as.numeric()
   for(i in seq_along(dates)) {
     count[i] <- sum(install_dates <= dates[i])
@@ -932,6 +1000,8 @@ generate_ts <- function(data) {
   tracking_ts <- data.frame(dates, count, prop = count/nrow(data)) %>% mutate(
     prop_cilo = prop - 1.39*sqrt((prop*(1-prop))/nrow(data)),
     prop_cihi = prop + 1.39*sqrt((prop*(1-prop))/nrow(data)),
+    prop_cilo95 = prop - 1.96*sqrt((prop*(1-prop))/nrow(data)),
+    prop_cihi95 = prop + 1.96*sqrt((prop*(1-prop))/nrow(data)),
     nobs = nrow(data)
   )
   tracking_ts
@@ -954,13 +1024,6 @@ tracking_ts_surveyplus_message_control_incent_na <- generate_ts(filter(tracking_
 
 tracking_ts_surveyplus_incent_treatment_noprevinstall <- generate_ts(filter(tracking_df_unique, survey_indicator == "survey" & (treat_incent.2 %in% c("EUR 1", "EUR 2", "EUR 3") & app_install.2 != 3)))
 tracking_ts_surveyplus_incent_control_noprevinstall <- generate_ts(filter(tracking_df_unique, survey_indicator == "survey" & treat_incent.2 == "Control" & app_install.2 != 3))
-
-if(apple_remove == FALSE){
-tracking_ts_surveyplus_apple <- generate_ts(filter(tracking_df_unique, apple == TRUE & survey_indicator == "survey"))
-tracking_ts_trackingonly_apple <- generate_ts(filter(tracking_df_unique, apple == TRUE & survey_indicator == "no survey"))
-tracking_ts_surveyplus_noapple <- generate_ts(filter(tracking_df_unique, apple == FALSE & survey_indicator == "survey"))
-tracking_ts_trackingonly_noapple <- generate_ts(filter(tracking_df_unique, apple == FALSE & survey_indicator == "no survey"))
-}
 
 
 # plot
@@ -1336,6 +1399,7 @@ dev.off()
 
 
 # plot, split by experiment, full tracking period (until Nov 2)
+if(tracking_period == "full"){
 pdf(file="../figures/app-usage-tracking-timeseries-split-fullperiod.pdf", height = 7, width = 8, family="Helvetica")
 par(oma=c(0,3,0,0))
 par(mar=c(.2,1,2,1))
@@ -1472,90 +1536,7 @@ rect(ybottom = .7, ytop = .77, xleft = range(tracking_ts_surveyplus$dates)[1], x
 par(xpd=FALSE)
 axis(3, at = tracking_ts_surveyplus$dates[round(length(tracking_ts_surveyplus$dates)/2)], label = "Incentive experiment groups", line = -.8, tick = FALSE)
 dev.off()
-
-
-
-
-# plot by device manufacturer, full tracking period
-pdf(file="../figures/app-usage-tracking-timeseries-apple.pdf", height = 5, width = 9, family="Helvetica")
-par(oma=c(0,0,0,0))
-par(mar=c(2.5,2,1,1))
-cols4 <- c("#b2182b","#e08214","#2166ac","#4393c3")
-# baseline TS
-plot(tracking_ts_surveyplus_apple$dates, tracking_ts_surveyplus_apple$prop, type = "l", xaxt = "n", yaxt = "n", xaxs="i", yaxs="i", ylim = c(0, .6), xlim = range(tracking_ts_surveyplus_apple$dates), xlab = NA, ylab = "App adoption rate")
-# add grid
-datelabels <-  tracking_ts_surveyplus_apple$dates[seq(1, length(tracking_ts_surveyplus_apple$dates), 7)]
-abline(h = seq(0, .6, .1), col = "grey80", lty = 3)
-abline(v = datelabels, col = "grey80", lty = 3)
-# label waves
-rect(xleft = as.Date(fieldtime_w1[1]), xright = as.Date(fieldtime_w1[2]), ybottom = 0, ytop = 1, col = rgb(0.5,0.5,0.5, 1/4), border = NA)
-rect(xleft = as.Date(fieldtime_w2[1]), xright = as.Date(fieldtime_w2[2]), ybottom = 0, ytop = 1, col = rgb(0.5,0.5,0.5, 1/4), border = NA)
-rect(xleft = as.Date(fieldtime_w3[1]), xright = as.Date(fieldtime_w3[2]), ybottom = 0, ytop = 1, col = rgb(0.5,0.5,0.5, 1/4), border = NA)
-text(mean(c(as.Date(fieldtime_w1[1]), as.Date(fieldtime_w1[2]))), .56, "Wave 1\n(Message\nTreatment)", cex = .7)
-text(mean(c(as.Date(fieldtime_w2[1]), as.Date(fieldtime_w2[2]))), .56, "Wave 2\n(Incentive\nTreatment)", cex = .7)
-text(mean(c(as.Date(fieldtime_w3[1]), as.Date(fieldtime_w3[2]))), .58, "Wave 3", cex = .7)
-# add CIs as polygons
-# apple, survey
-CI.x <- c(tracking_ts_surveyplus_apple$dates, rev(tracking_ts_surveyplus_apple$dates)) # polygons are drawn clockwise
-CI.y <- c(tracking_ts_surveyplus_apple$prop_cihi, rev(tracking_ts_surveyplus_apple$prop_cilo))
-CI.col <- adjustcolor(cols4[1],alpha.f=0.25)
-polygon(CI.x, CI.y, col=CI.col, border=NA)
-# no apple, survey
-CI.x <- c(tracking_ts_surveyplus_noapple$dates, rev(tracking_ts_surveyplus_noapple$dates)) # polygons are drawn clockwise
-CI.y <- c(tracking_ts_surveyplus_noapple$prop_cihi, rev(tracking_ts_surveyplus_noapple$prop_cilo))
-CI.col <- adjustcolor(cols4[2],alpha.f=0.25)
-polygon(CI.x, CI.y, col=CI.col, border=NA)
-# apple, no survey
-CI.x <- c(tracking_ts_trackingonly_apple$dates, rev(tracking_ts_trackingonly_apple$dates)) # polygons are drawn clockwise
-CI.y <- c(tracking_ts_trackingonly_apple$prop_cihi, rev(tracking_ts_trackingonly_apple$prop_cilo))
-CI.col <- adjustcolor(cols4[3],alpha.f=0.25)
-polygon(CI.x, CI.y, col=CI.col, border=NA)
-# no apple, no survey
-CI.x <- c(tracking_ts_trackingonly_noapple$dates, rev(tracking_ts_trackingonly_noapple$dates)) # polygons are drawn clockwise
-CI.y <- c(tracking_ts_trackingonly_noapple$prop_cihi, rev(tracking_ts_trackingonly_noapple$prop_cilo))
-CI.col <- adjustcolor(cols4[4],alpha.f=0.25)
-polygon(CI.x, CI.y, col=CI.col, border=NA)
-# add main TS
-lines(tracking_ts_surveyplus_apple$dates, tracking_ts_surveyplus_apple$prop, col = cols4[1], lty = 1, lwd = 2)
-lines(tracking_ts_surveyplus_noapple$dates, tracking_ts_surveyplus_noapple$prop, col = cols4[2], lty = 2, lwd = 2)
-lines(tracking_ts_trackingonly_apple$dates, tracking_ts_trackingonly_apple$prop, col = cols4[3], lty = 1, lwd = 2)
-lines(tracking_ts_trackingonly_noapple$dates, tracking_ts_trackingonly_noapple$prop, col = cols4[4], lty = 2, lwd = 2)
-# define dates
-dates_points_surveyplus_apple <- filter(tracking_ts_surveyplus_apple, dates %in% as.Date(c(fieldtime_w1, fieldtime_w2, fieldtime_w3)))
-dates_points_surveyplus_noapple <- filter(tracking_ts_surveyplus_noapple, dates %in% as.Date(c(fieldtime_w1, fieldtime_w2, fieldtime_w3)))
-dates_points_trackingonly_apple <- filter(tracking_ts_trackingonly_apple, dates %in% as.Date(c(fieldtime_w1, fieldtime_w2, fieldtime_w3)))
-dates_points_trackingonly_noapple <- filter(tracking_ts_trackingonly_noapple, dates %in% as.Date(c(fieldtime_w1, fieldtime_w2, fieldtime_w3)))
-# plot points
-points(dates_points_surveyplus_apple$dates, dates_points_surveyplus_apple$prop, pch = 21, col = "black", bg = cols4[1])
-points(dates_points_surveyplus_noapple$dates, dates_points_surveyplus_noapple$prop, pch = 21, col = "black", bg = cols4[2])
-points(dates_points_trackingonly_apple$dates, dates_points_trackingonly_apple$prop, pch = 21, col = "black", bg = cols4[3])
-points(dates_points_trackingonly_noapple$dates, dates_points_trackingonly_noapple$prop, pch = 21, col = "black", bg = cols4[4])
-# plot text labels
-text(dates_points_surveyplus_apple$dates, dates_points_surveyplus_apple$prop, str_replace(sprintf("%0.2f", round(dates_points_surveyplus_apple$prop, 2)), "^0", ""), pos = 3, cex = .7, col = cols4[1])
-text(dates_points_surveyplus_noapple$dates, dates_points_surveyplus_noapple$prop, str_replace(sprintf("%0.2f", round(dates_points_surveyplus_noapple$prop, 2)), "^0", ""), pos = 1, cex = .7, col = cols4[2])
-text(dates_points_trackingonly_apple$dates, dates_points_trackingonly_apple$prop, str_replace(sprintf("%0.2f", round(dates_points_trackingonly_apple$prop, 2)), "^0", ""), pos = 1, cex = .7, col = cols4[3])
-text(dates_points_trackingonly_noapple$dates, dates_points_trackingonly_noapple$prop, str_replace(sprintf("%0.2f", round(dates_points_trackingonly_noapple$prop, 2)), "^0", ""), pos = 3, cex = .7, col = cols4[4])
-# add axis labels
-axis(1, datelabels, format(datelabels, "%b %d"), cex.axis = .7)
-axis(2, seq(0, .6, .1), seq(0, .6, .1), las = 1, cex.axis = .7)
-# add legend
-legend("topleft", 
-       y.intersp = 1.5,
-       legend = c(paste0("Survey-tracking, Apple device", " (n = ", tracking_ts_surveyplus_apple$nobs[1], ")"), 
-                  paste0("Survey-tracking, Android device", " (n = ", tracking_ts_surveyplus_noapple$nobs[1], ")"),
-                  paste0("Tracking-only, Apple device", " (n = ", tracking_ts_trackingonly_apple$nobs[1], ")"),
-                  paste0("Tracking-only, Android device", " (n = ", tracking_ts_trackingonly_noapple$nobs[1], ")")
-       ), 
-       col = cols4[1:4], 
-       lty = c(1, 2, 1, 2), 
-       lwd = 2,
-       bty = "n", 
-       pt.cex = 2, 
-       cex = .7, 
-       text.col = cols4, 
-       horiz = F)
-dev.off()
-
+}
 
 
 
@@ -1641,10 +1622,11 @@ print(quotas_compare_table_xtab, type = "latex", sanitize.text.function = functi
 
 
 
+
 # message experiment balance tables (predictors incl. pre-treatment outcomes; treatments vs. control) --------------
 
 # compute covariate means by treatment group
-covar_means_df <- ger_df_wide[,c("treat.1", covars_adapted_df$variable)] %>% group_by(treat.1) %>% summarise_all(list(~ mean(.x, na.rm = TRUE))) %>% filter(!is.na(treat.1))
+covar_means_df <- ger_df_wide[,c("treat.1", covars_adapted_df$variable)] %>% filter(ger_df_wide$sample_type.1 != "trackingonly") %>% group_by(treat.1) %>% summarise_all(list(~ mean(.x, na.rm = TRUE))) %>% filter(!is.na(treat.1))
 prosoc_means_df <- filter(covar_means_df, treat.1 == "prosocial") %>% pivot_longer(-treat.1, names_to = "variable", values_to = "prosoc_mean") %>% dplyr::select(-treat.1)
 selfint_means_df <- filter(covar_means_df, treat.1 == "selfinterest") %>% pivot_longer(-treat.1, names_to = "variable", values_to = "selfint_mean") %>% dplyr::select(-treat.1)
 control_means_df <- filter(covar_means_df, treat.1 == "control") %>% pivot_longer(-treat.1, names_to = "variable", values_to = "control_mean") %>% dplyr::select(-treat.1)
@@ -1653,32 +1635,54 @@ control_means_df <- filter(covar_means_df, treat.1 == "control") %>% pivot_longe
 prosoc_control_means_df <- left_join(prosoc_means_df, control_means_df, by = "variable")
 prosoc_control_means_df$variable_label <- str_replace(covars_adapted_df$var_label, "\\n", " ")
 prosoc_control_means_df$difference_t_c = prosoc_control_means_df$prosoc_mean - prosoc_control_means_df$control_mean
-prosoc_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_prosoc.1", filter(ger_df_wide, treat_selfint.1 != TRUE))
+prosoc_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_prosoc.1", filter(ger_df_wide, treat_selfint.1 != TRUE, sample_type.1 != "trackingonly"))
 prosoc_control_means_df <- dplyr::select(prosoc_control_means_df, variable_label, prosoc_mean, control_mean, difference_t_c, p_value)
-names(prosoc_control_means_df) <- c("Covariate", "Treatment", "Control", "Diff. (T-C)", "p value")
 
 selfint_control_means_df <- left_join(selfint_means_df, control_means_df, by = "variable")
 selfint_control_means_df$variable_label <- str_replace(covars_adapted_df$var_label, "\\n", " ")
 selfint_control_means_df$difference_t_c = selfint_control_means_df$selfint_mean - selfint_control_means_df$control_mean
-selfint_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_selfint.1", filter(ger_df_wide, treat_prosoc.1 != TRUE))
+selfint_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_selfint.1", filter(ger_df_wide, treat_prosoc.1 != TRUE, sample_type.1 != "trackingonly"))
 selfint_control_means_df <- dplyr::select(selfint_control_means_df, variable_label, selfint_mean, control_mean, difference_t_c, p_value)
-names(selfint_control_means_df) <- c("Covariate", "Treatment", "Control", "Diff. (T-C)", "p value")
 
 # export tables
-covar_balance_prosoc_controlxtab <- xtable(prosoc_control_means_df, digits = 2, label = "tab:prosoc-balance")
+prosoc_control_means_df_names <- prosoc_control_means_df
+names(prosoc_control_means_df_names) <- c("Covariate", "Treatment", "Control", "Diff. (T-C)", "p value")
+covar_balance_prosoc_controlxtab <- xtable(prosoc_control_means_df_names, digits = 2, label = "tab:prosoc-balance")
 caption(covar_balance_prosoc_controlxtab) <- "Covariate balance: Pro-social message treatment vs. Control (means reported)"
+covar_balance_prosoc_controlxtab$`p value` <- minsig_fixer(covar_balance_prosoc_controlxtab$`p value`, latex = TRUE)
 print(covar_balance_prosoc_controlxtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = TRUE, caption.placement = "top", file = "../figures/prosoc_balance_table.tex")
 
-covar_balance_selfint_controlxtab <- xtable(selfint_control_means_df, digits = 2, label = "tab:selfint-balance")
+selfint_control_means_df_names <- selfint_control_means_df
+names(selfint_control_means_df_names) <- c("Covariate", "Treatment", "Control", "Diff. (T-C)", "p value")
+covar_balance_selfint_controlxtab <- xtable(selfint_control_means_df_names, digits = 2, label = "tab:selfint-balance")
 caption(covar_balance_selfint_controlxtab) <- "Covariate balance: Self-interest message treatment vs. Control (means reported)"
+covar_balance_selfint_controlxtab$`p value` <- minsig_fixer(covar_balance_selfint_controlxtab$`p value`, latex = TRUE)
 print(covar_balance_selfint_controlxtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = TRUE, caption.placement = "top", file = "../figures/selfint_balance_table.tex")
 
 
+# joint table
+prosoc_control_means_df$prosoc_mean_pval <- paste0(sprintf("%0.2f", round(prosoc_control_means_df$prosoc_mean, 2)), " (", minsig_fixer(prosoc_control_means_df$p_value, 2, latex = TRUE), ")")
+selfint_control_means_df$selfint_mean_pval <- paste0(sprintf("%0.2f", round(selfint_control_means_df$selfint_mean, 2)), " (", minsig_fixer(selfint_control_means_df$p_value, 2, latex = TRUE), ")")
 
+message_balance_df <- 
+  bind_cols(
+  dplyr::select(prosoc_control_means_df, variable_label, control_mean, prosoc_mean_pval),
+  dplyr::select(selfint_control_means_df, selfint_mean_pval)
+  )
+
+message_balance_df_names <- message_balance_df
+names(message_balance_df_names) <- c("Covariate", "Control", "Pro-Social (p val.)", "Self-Interest (p.val)")
+message_balance_df_namesxtab <- xtable(message_balance_df_names, digits = 2, label = "tab:message-balance", align = c("l", "l", "r", "r", "r"))
+caption(message_balance_df_namesxtab) <- "Covariate balance: Message treatments vs. control (means and p values of treatment-control differences reported)."
+
+print(message_balance_df_namesxtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = TRUE, caption.placement = "top", file = "../figures/message_balance_table.tex")
+  
+            
+                                    
 # incentivization experiment balance tables (predictors incl. pre-treatment outcomes; treatments vs. control) --------------
 
 # compute covariate means by treatment group
-covar_means_df <- ger_df_wide[,c("treat_incent.2", covars_adapted_df$variable)] %>% group_by(treat_incent.2) %>% summarise_all(list(~ mean(.x, na.rm = TRUE))) %>% filter(!is.na(treat_incent.2))
+covar_means_df <- ger_df_wide[,c("treat_incent.2", covars_adapted_df$variable)] %>% filter(ger_df_wide$sample_type.1 != "trackingonly") %>% group_by(treat_incent.2) %>% summarise_all(list(~ mean(.x, na.rm = TRUE))) %>% filter(!is.na(treat_incent.2))
 eur1_means_df <- filter(covar_means_df, treat_incent.2 == "EUR 1") %>% pivot_longer(-treat_incent.2, names_to = "variable", values_to = "eur1_mean") %>% dplyr::select(-treat_incent.2)
 eur2_means_df <- filter(covar_means_df, treat_incent.2 == "EUR 2") %>% pivot_longer(-treat_incent.2, names_to = "variable", values_to = "eur2_mean") %>% dplyr::select(-treat_incent.2)
 eur5_means_df <- filter(covar_means_df, treat_incent.2 == "EUR 5") %>% pivot_longer(-treat_incent.2, names_to = "variable", values_to = "eur5_mean") %>% dplyr::select(-treat_incent.2)
@@ -1688,36 +1692,64 @@ control_means_df <- filter(covar_means_df, treat_incent.2 == "Control") %>% pivo
 eur1_control_means_df <- left_join(eur1_means_df, control_means_df, by = "variable")
 eur1_control_means_df$variable_label <- str_replace(covars_adapted_df$var_label, "\\n", " ")
 eur1_control_means_df$difference_t_c = eur1_control_means_df$eur1_mean - eur1_control_means_df$control_mean
-eur1_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_incent_eur1.2", filter(ger_df_wide, !(treat_incent.2 %in% c("EUR 2", "EUR 5"))))
+eur1_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_incent_eur1.2", filter(ger_df_wide, !(treat_incent.2 %in% c("EUR 2", "EUR 5")), sample_type.1 != "trackingonly"))
 eur1_control_means_df <- dplyr::select(eur1_control_means_df, variable_label, eur1_mean, control_mean, difference_t_c, p_value)
-names(eur1_control_means_df) <- c("Covariate", "EUR 1", "Control", "Diff. (T-C)", "p value")
 
 eur2_control_means_df <- left_join(eur2_means_df, control_means_df, by = "variable")
 eur2_control_means_df$variable_label <- str_replace(covars_adapted_df$var_label, "\\n", " ")
 eur2_control_means_df$difference_t_c = eur2_control_means_df$eur2_mean - eur2_control_means_df$control_mean
-eur2_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_incent_eur2.2", filter(ger_df_wide, !(treat_incent.2 %in% c("EUR 1", "EUR 5"))))
+eur2_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_incent_eur2.2", filter(ger_df_wide, !(treat_incent.2 %in% c("EUR 1", "EUR 5")), sample_type.1 != "trackingonly"))
 eur2_control_means_df <- dplyr::select(eur2_control_means_df, variable_label, eur2_mean, control_mean, difference_t_c, p_value)
-names(eur2_control_means_df) <- c("Covariate", "EUR 2", "Control", "Diff. (T-C)", "p value")
 
 eur5_control_means_df <- left_join(eur5_means_df, control_means_df, by = "variable")
 eur5_control_means_df$variable_label <- str_replace(covars_adapted_df$var_label, "\\n", " ")
 eur5_control_means_df$difference_t_c = eur5_control_means_df$eur5_mean - eur5_control_means_df$control_mean
-eur5_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_incent_eur5.2", filter(ger_df_wide, !(treat_incent.2 %in% c("EUR 1", "EUR 2"))))
+eur5_control_means_df$p_value <- map_dbl(covars_adapted_df$variable, t_test_out, "treat_incent_eur5.2", filter(ger_df_wide, !(treat_incent.2 %in% c("EUR 1", "EUR 2")), sample_type.1 != "trackingonly"))
 eur5_control_means_df <- dplyr::select(eur5_control_means_df, variable_label, eur5_mean, control_mean, difference_t_c, p_value)
-names(eur5_control_means_df) <- c("Covariate", "EUR 5", "Control", "Diff. (T-C)", "p value")
 
 # export tables
-covar_balance_eur1_controlxtab <- xtable(eur1_control_means_df, digits = 2, label = "tab:eur1-balance")
+eur1_control_means_df_names <- eur1_control_means_df
+names(eur1_control_means_df_names) <- c("Covariate", "EUR 1", "Control", "Diff. (T-C)", "p value")
+covar_balance_eur1_controlxtab <- xtable(eur1_control_means_df_names, digits = 2, label = "tab:eur1-balance")
 caption(covar_balance_eur1_controlxtab) <- "Covariate balance: EUR 1 incentivization treatment vs. Control (means reported)"
+covar_balance_eur1_controlxtab$`p value` <- minsig_fixer(covar_balance_eur1_controlxtab$`p value`, latex = TRUE)
 print(covar_balance_eur1_controlxtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = TRUE, caption.placement = "top", file = "../figures/eur1_balance_table.tex")
 
-covar_balance_eur2_controlxtab <- xtable(eur2_control_means_df, digits = 2, label = "tab:eur2-balance")
+eur2_control_means_df_names <- eur2_control_means_df
+names(eur2_control_means_df_names) <- c("Covariate", "EUR 2", "Control", "Diff. (T-C)", "p value")
+covar_balance_eur2_controlxtab <- xtable(eur2_control_means_df_names, digits = 2, label = "tab:eur2-balance")
 caption(covar_balance_eur2_controlxtab) <- "Covariate balance: EUR 2 incentivization treatment vs. Control (means reported)"
+covar_balance_eur2_controlxtab$`p value` <- minsig_fixer(covar_balance_eur2_controlxtab$`p value`, latex = TRUE)
 print(covar_balance_eur2_controlxtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = TRUE, caption.placement = "top", file = "../figures/eur2_balance_table.tex")
 
-covar_balance_eur5_controlxtab <- xtable(eur5_control_means_df, digits = 2, label = "tab:eur5-balance")
+eur5_control_means_df_names <- eur5_control_means_df
+names(eur5_control_means_df_names) <- c("Covariate", "EUR 5", "Control", "Diff. (T-C)", "p value")
+covar_balance_eur5_controlxtab <- xtable(eur5_control_means_df_names, digits = 2, label = "tab:eur5-balance")
 caption(covar_balance_eur5_controlxtab) <- "Covariate balance: EUR 5 incentivization treatment vs. Control (means reported)"
+covar_balance_eur5_controlxtab$`p value` <- minsig_fixer(covar_balance_eur5_controlxtab$`p value`, latex = TRUE)
 print(covar_balance_eur5_controlxtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = TRUE, caption.placement = "top", file = "../figures/eur5_balance_table.tex")
+
+
+# joint table
+eur1_control_means_df$eur1_mean_pval <- paste0(sprintf("%0.2f", round(eur1_control_means_df$eur1_mean, 2)), " (", minsig_fixer(eur1_control_means_df$p_value, 2, latex = TRUE), ")")
+eur2_control_means_df$eur2_mean_pval <- paste0(sprintf("%0.2f", round(eur2_control_means_df$eur2_mean, 2)), " (", minsig_fixer(eur2_control_means_df$p_value, 2, latex = TRUE), ")")
+eur5_control_means_df$eur5_mean_pval <- paste0(sprintf("%0.2f", round(eur5_control_means_df$eur5_mean, 2)), " (", minsig_fixer(eur5_control_means_df$p_value, 2, latex = TRUE), ")")
+
+
+incent_balance_df <- 
+  bind_cols(
+    dplyr::select(eur1_control_means_df, variable_label, control_mean, eur1_mean_pval),
+    dplyr::select(eur2_control_means_df, eur2_mean_pval),
+    dplyr::select(eur5_control_means_df, eur5_mean_pval),
+  )
+
+incent_balance_df_names <- incent_balance_df
+names(incent_balance_df_names) <- c("Covariate", "Control", "EUR 1 (p val.)", "EUR 2 (p.val)", "EUR 5 (p.val)")
+incent_balance_df_namesxtab <- xtable(incent_balance_df_names, digits = 2, label = "tab:incent-balance", align = c("l", "l", "r", "r", "r", "r"))
+caption(incent_balance_df_namesxtab) <- "Covariate balance: Incentive treatments vs. control (means and p values of treatment-control differences reported)."
+
+print(incent_balance_df_namesxtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = TRUE, caption.placement = "top", file = "../figures/incent_balance_table.tex")
+
 
 
 
@@ -1764,11 +1796,11 @@ know_cor_df <- dplyr::select(ger_df_wide, treat.1, ends_with("_cor.1") & !contai
 
 
 var_labels <- c(
-  "(3) Data collected by\n the app are stored\ncentrally at RKI (F)", 
-  " (2) The more app users,\nthe better vulnerable\npeople are\nprotected (T)",
-  "(1) Despite anonymity,\nthe app can help me\nknow faster about\npossible infection (T)",
-  "(5) To date the app\nhas been installed\nabout 10 million times (F)",
-  "(4) If many people use\n the app, return to daily\nroutine possible almost\nwithout restrictions (T)"
+  "(3) Data collected by\n the app are stored\ncentrally at RKI (false)", 
+  " (2) The more app\nusers, the better\nvulnerable people\nare protected (true)",
+  "(1) Despite anonymity,\nthe app can inform\nme faster about\npossible infection (true)",
+  "(5) To date the app\nhas been installed about\n10 million times (false)",
+  "(4) If many people use\n the app, a return to\ndaily routine is possible\n with almost no\nrestrictions (true)"
   )
 var_order <- c(3, 2, 1, 5, 4)
 know_cor_df$var_labels <- factor(rep(var_labels, 3), levels = var_labels[var_order])
@@ -1804,9 +1836,10 @@ segment_data_control_selfint = data.frame(
 )
 
 # set up annotations
-annot_prosoc_control <- paste0("p = ", sprintf("%0.2f", round(t_test_prosoc_control[var_order], 2)))
-annot_selfint_control <- paste0("p = ", sprintf("%0.2f", round(t_test_selfint_control[var_order], 2)))
-annot_prosoc_selfint <- paste0("p = ", sprintf("%0.2f", round(t_test_prosoc_selfint[var_order], 2)))
+annot_prosoc_control <- paste0("p = ", minsig_fixer(t_test_prosoc_control[var_order])) %>% str_replace(" = <", " < ")
+annot_selfint_control <- paste0("p = ", minsig_fixer(t_test_selfint_control[var_order])) %>% str_replace(" = <", " < ")
+annot_prosoc_selfint <- paste0("p = ", minsig_fixer(t_test_prosoc_selfint[var_order])) %>% str_replace(" = <", " < ")
+
 
 
 # plot
@@ -1853,14 +1886,21 @@ t_test_eur1_eur2 <- map_dbl("treat_incent_agree.2", t_test_out, "treat_incent_eu
 t_test_eur1_eur5 <- map_dbl("treat_incent_agree.2", t_test_out, "treat_incent_eur5.2", filter(ger_df_wide, !(treat_incent.2 %in% c("Control", "EUR 2"))))
 t_test_eur2_eur5 <- map_dbl("treat_incent_agree.2", t_test_out, "treat_incent_eur5.2", filter(ger_df_wide, !(treat_incent.2 %in% c("Control", "EUR 1"))))
 
+# raw t tests
+t.test(treat_incent_agree.2 ~ treat_incent_eur2.2, data = filter(ger_df_wide, !(treat_incent.2 %in% c("Control", "EUR 5"))))
+t.test(treat_incent_agree.2 ~ treat_incent_eur5.2, data = filter(ger_df_wide, !(treat_incent.2 %in% c("Control", "EUR 2"))))
+t.test(treat_incent_agree.2 ~ treat_incent_eur5.2, data = filter(ger_df_wide, !(treat_incent.2 %in% c("Control", "EUR 1"))))
+
+
 # set up annotations
-annot_eur1_eur2 <- paste0("p = ", sprintf("%0.2f", round(t_test_eur1_eur2, 2)))
-annot_eur1_eur5 <- paste0("p = ", sprintf("%0.2f", round(t_test_eur1_eur5, 2)))
-annot_eur2_eur5 <- paste0("p = ", sprintf("%0.2f", round(t_test_eur2_eur5, 2)))
+annot_eur1_eur2 <- paste0("p = ", minsig_fixer(t_test_eur1_eur2)) %>% str_replace(" = <", " < ")
+annot_eur1_eur5 <- paste0("p = ", minsig_fixer(t_test_eur1_eur5)) %>% str_replace(" = <", " < ")
+annot_eur2_eur5 <- paste0("p = ", minsig_fixer(t_test_eur2_eur5)) %>% str_replace(" = <", " < ")
 
 annot_eur1 <- paste0(sprintf("%0.2f", round(agreement_df$value[agreement_df$treat_incent.2 == "EUR 1"], 2)))
 annot_eur2 <- paste0(sprintf("%0.2f", round(agreement_df$value[agreement_df$treat_incent.2 == "EUR 2"], 2)))
 annot_eur5 <- paste0(sprintf("%0.2f", round(agreement_df$value[agreement_df$treat_incent.2 == "EUR 5"], 2)))
+
 
 # set up segments
 segment_eur1_eur2 <- data.frame(x = 1, xend = 2, y = .5, yend = .5)
@@ -1915,12 +1955,13 @@ t_test_eur2_control <- map_dbl("app_hyb_installed_at_w3", t_test_out, "treat_inc
 t_test_eur5_control <- map_dbl("app_hyb_installed_at_w3", t_test_out, "treat_incent_control.2", filter(ger_df_wide, !(treat_incent.2 %in% c("EUR 1", "EUR 2"))))
 
 # set up annotations
-annot_eur1_eur2 <- paste0("p = ", sprintf("%0.2f", round(t_test_eur1_eur2, 2)))
-annot_eur1_eur5 <- paste0("p = ", sprintf("%0.2f", round(t_test_eur1_eur5, 2)))
-annot_eur1_control <- paste0("p = ", sprintf("%0.2f", round(t_test_eur1_control, 2)))
-annot_eur2_eur5 <- paste0("p = ", sprintf("%0.2f", round(t_test_eur2_eur5, 2)))
-annot_eur2_control <- paste0("p = ", sprintf("%0.2f", round(t_test_eur2_control, 2)))
-annot_eur5_control <- paste0("p = ", sprintf("%0.2f", round(t_test_eur5_control, 2)))
+annot_eur1_eur2 <- paste0("p = ", minsig_fixer(t_test_eur1_eur2)) %>% str_replace(" = <", " < ")
+annot_eur1_eur5 <- paste0("p = ", minsig_fixer(t_test_eur1_eur5)) %>% str_replace(" = <", " < ")
+annot_eur1_control <- paste0("p = ", minsig_fixer(t_test_eur1_control)) %>% str_replace(" = <", " < ")
+annot_eur2_eur5 <- paste0("p = ", minsig_fixer(t_test_eur2_eur5)) %>% str_replace(" = <", " < ")
+annot_eur2_control <- paste0("p = ", minsig_fixer(t_test_eur2_control)) %>% str_replace(" = <", " < ")
+annot_eur5_control <- paste0("p = ", minsig_fixer(t_test_eur5_control)) %>% str_replace(" = <", " < ")
+
 annot_eur1 <- paste0(sprintf("%0.2f", round(install_df$value[install_df$treat_incent.2 == "EUR 1"], 2)))
 annot_eur2 <- paste0(sprintf("%0.2f", round(install_df$value[install_df$treat_incent.2 == "EUR 2"], 2)))
 annot_eur5 <- paste0(sprintf("%0.2f", round(install_df$value[install_df$treat_incent.2 == "EUR 5"], 2)))
@@ -2018,4 +2059,99 @@ ggplot(data = install_df, aes(x = treat_incent.2, y = value, fill = treat_incent
   theme(legend.position="none",
         plot.margin = unit(c(0,0.2,0,0), "cm")) #t,r,b,l
 dev.off()
+
+
+
+# device stats ------------------------------------------
+
+devices_df$iOS13_5plus <- devices_df$device_os == "ios" & as.numeric(str_extract(devices_df$device_version, "^[:digit:]{2}\\.[:digit:]{1}")) >= 13.5
+devices_df$android6plus <-  devices_df$device_os == "android" & as.numeric(str_extract(devices_df$device_version, "^[:digit:]+")) >= 6
+tabyl(devices_df$device_os)
+tabyl(devices_df$iOS13_5plus[devices_df$device_os == "ios"])
+tabyl(devices_df$android6plus[devices_df$device_os == "android"])
+
+
+
+
+
+# click measures of app uptake in Wave 2 -----------------
+
+# clicking vs. reported uptake w3
+crosstab(ger_df_wide, row.vars = "clicked_link_yes", col.vars = "app_rep_installed_at_w3", type = c("r"), style = "long", addmargins = FALSE)
+crosstab(ger_df_wide, row.vars = "clicked_link_yes", col.vars = "app_rep_installed_at_w3",  style = "long", addmargins = TRUE)
+
+# clicking vs. actual uptake w3
+crosstab(ger_df_wide, row.vars = "clicked_link_yes", col.vars = "app_track_installed_at_w3", type = c("r"), style = "long", addmargins = FALSE)
+crosstab(ger_df_wide, row.vars = "clicked_link_yes", col.vars = "app_track_installed_at_w3",  style = "long", addmargins = TRUE)
+
+
+
+
+# clicking vs. treatment status
+
+ger_df_wide$show_qr_codes <- as.numeric(ger_df_wide$app_installlinks.2 == 4)
+ger_df_wide$clicked_appstore <- as.numeric(ger_df_wide$clicked_appstore.2)
+ger_df_wide$clicked_playstore <- as.numeric(ger_df_wide$clicked_playstore.2)
+
+ger_df_wide$clicked_link <- 
+  rowSums(ger_df_wide[,c("clicked_appstore", "clicked_playstore", "show_qr_codes")], na.rm = TRUE)
+ger_df_wide$clicked_link_yes <- ger_df_wide$clicked_link >= 1
+ger_df_wide$clicked_link_yes[is.na(ger_df_wide$app_installlinks.2)] <- NA
+
+
+crosstab(ger_df_wide, row.vars = "clicked_link_yes", col.vars = "treat_incent.2", type = c("c"), style = "long", addmargins = FALSE)
+
+# compute install click rates by treatment status
+clickinstall_df <- dplyr::select(ger_df_wide, clicked_link_yes, treat_incent.2) %>% 
+  group_by(treat_incent.2) %>% 
+  summarize_all(mean, na.rm = TRUE) %>% 
+  pivot_longer(-treat_incent.2, names_to = "variable") %>%
+  dplyr::select(-variable) %>% 
+  filter(!is.na(value))
+
+# compute max value across treatments
+clickinstall_df$max_agree <- max(clickinstall_df$value)
+
+# compute t tests
+t_test_eur1_eur2 <- map_dbl("clicked_link_yes", t_test_out, "treat_incent_eur2.2", filter(ger_df_wide, !(treat_incent.2 %in% c("Control", "EUR 5"))))
+t_test_eur1_eur5 <- map_dbl("clicked_link_yes", t_test_out, "treat_incent_eur5.2", filter(ger_df_wide, !(treat_incent.2 %in% c("Control", "EUR 2"))))
+t_test_eur2_eur5 <- map_dbl("clicked_link_yes", t_test_out, "treat_incent_eur5.2", filter(ger_df_wide, !(treat_incent.2 %in% c("Control", "EUR 1"))))
+
+# set up annotations
+annot_eur1_eur2 <- paste0("p = ", minsig_fixer(t_test_eur1_eur2)) %>% str_replace(" = <", " < ")
+annot_eur1_eur5 <- paste0("p = ", minsig_fixer(t_test_eur1_eur5)) %>% str_replace(" = <", " < ")
+annot_eur2_eur5 <- paste0("p = ", minsig_fixer(t_test_eur2_eur5)) %>% str_replace(" = <", " < ")
+
+annot_eur1 <- paste0(sprintf("%0.2f", round(clickinstall_df$value[clickinstall_df$treat_incent.2 == "EUR 1"], 2)))
+annot_eur2 <- paste0(sprintf("%0.2f", round(clickinstall_df$value[clickinstall_df$treat_incent.2 == "EUR 2"], 2)))
+annot_eur5 <- paste0(sprintf("%0.2f", round(clickinstall_df$value[clickinstall_df$treat_incent.2 == "EUR 5"], 2)))
+
+
+# set up segments
+segment_eur1_eur2 <- data.frame(x = 1, xend = 2, y = .58, yend = .58)
+segment_eur1_eur5 <- data.frame(x = 1, xend = 3, y = .7, yend = .7)
+segment_eur2_eur5 <- data.frame(x = 2, xend = 3, y = .64, yend = .64)
+
+# plot
+pdf(file="../figures/install-click-barchart.pdf", height = 3.5, width = 3.5)
+ggplot(data = clickinstall_df, aes(x = treat_incent.2, y = value, fill = treat_incent.2)) +
+  geom_bar(stat = "identity")  + 
+  geom_segment(data = segment_eur1_eur2, aes(x = x, y = y, xend = xend, yend = yend), inherit.aes = FALSE) + 
+  geom_segment(data = segment_eur1_eur5, aes(x = x, y = y, xend = xend, yend = yend), inherit.aes = FALSE) + 
+  geom_segment(data = segment_eur2_eur5, aes(x = x, y = y, xend = xend, yend = yend), inherit.aes = FALSE) + 
+  annotate("text", x = 1, y = clickinstall_df$value[clickinstall_df$treat_incent.2 == "EUR 1"] + .025, label = annot_eur1, size = 3) + 
+  annotate("text", x = 2, y = clickinstall_df$value[clickinstall_df$treat_incent.2 == "EUR 2"] + .025, label = annot_eur2, size = 3) + 
+  annotate("text", x = 3, y = clickinstall_df$value[clickinstall_df$treat_incent.2 == "EUR 5"] + .025, label = annot_eur5, size = 3) + 
+  annotate("text", x = 1.5, y = .61, label = annot_eur1_eur2, size = 3) + 
+  annotate("text", x = 2.5, y = .67, label = annot_eur2_eur5, size = 3) + 
+  annotate("text", x = 2, y = .72, label = annot_eur1_eur5, size = 3) + 
+  scale_fill_manual(values=c("#99d8c9", "#41ae76", "#005824")) +
+  xlab("Incentivization") + ylab("Click-to-install rate") +
+  ylim(0, .72) + 
+  ggtitle("") + 
+  theme(legend.position="none",
+        plot.margin = unit(c(0,0.2,0,0), "cm")) #t,r,b,l
+dev.off()
+
+
 

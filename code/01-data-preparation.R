@@ -23,21 +23,52 @@ source("functions.R")
   # - cases_landkreis.csv
 
 # anonymized data publicly available
-  # - ger_df_wide.RDS
+  # - ger_df_wide_an.RDS
+  # - tracking_df_all_an.RDS
+  # - ger_df_wide_apple_full_an.RDS
+  # - tracking_df_all_apple_full_an.RDS
+  # - ger_df_wide_apple_oct_an.RDS
+  # - tracking_df_all_apple_oct_an.RDS
 
 
 # import data ------------
 
+# how to deal with apple users
+apple_remove <- TRUE
+tracking_period <- "study" # "study", "full", "oct"
+
 # tracking data
 devices_df <- read_csv("../data/20200908 all devices metadata.csv")
-tracking_df <- read_csv("../data/20200923 all devices views de.rki.coronawarnapp.csv")
 tracking_sociodem_df <- read_csv("../data/20200908 socio demographics.csv")
-date_data <- "20200921"
+
+if(apple_remove == TRUE & tracking_period == "study"){
+  tracking_df <- read_csv("../data/20201102 all devices views de.rki.coronawarnapp.csv") %>% filter(ymd(as.Date(used_at)) <= "2020-09-21")
+  date_data <- "20200921"
+}
+
+if(apple_remove == FALSE & tracking_period == "full"){
+  tracking_df <- read_csv("../data/20201102 all devices views de.rki.coronawarnapp.csv") %>% filter(ymd(as.Date(used_at)) <= "2020-10-31")
+  date_data <- "20201031"
+}
+
+if(apple_remove == FALSE & tracking_period == "oct"){
+  tracking_df <- read_csv("../data/20201102 all devices views de.rki.coronawarnapp.csv") %>% filter(ymd(as.Date(used_at)) <= "2020-10-31", ymd(as.Date(used_at)) >= "2020-10-01")
+  date_data <- "20201031"
+}
+
+
+# newest tracking data
+# devices_df <- read_csv("../data/20200908 all devices metadata.csv")
+# tracking_df <- read_csv("../data/20201102 all devices views de.rki.coronawarnapp.csv") %>% filter(ymd(as.Date(used_at)) <= "2020-11-02")
+# tracking_sociodem_df <- read_csv("../data/20200908 socio demographics.csv")
+# date_data <- "20201102"
+
+
 
 # wave 1
 dat <- read_spss("../data/Corona_September 9, 2020_10.54.sav") 
 ger_w1_full_df <- dplyr::filter(dat, Q_Language == "DE"  & !is.na(t_end_screen_Page_Submit) & psid != "") %>% 
-                dplyr::select(-contains("pol"),-contains("_ita"),-contains("ita_"),-contains("bra"),-contains("usa")) 
+  dplyr::select(-contains("pol"),-contains("_ita"),-contains("ita_"),-contains("bra"),-contains("usa")) 
 ger_w1_df <- ger_w1_full_df %>% dplyr::select(-starts_with("t_"), t_app_intervention_Page_Submit)
 ger_w1_df$wave <- 1
 ger_w1_time_df <- ger_w1_full_df %>% dplyr::select(ResponseId, psid, tic, treatment, sample_type, starts_with("t_"))
@@ -112,9 +143,9 @@ ger_df$treat_incent_agree[is.na(ger_df$treat_incent_agree) & ger_df$treat_incent
 ger_df$age <- 2020 - as.numeric(as.character(as_factor(ger_df$birthyear)))
 ger_df$age10 <- ger_df$age/10
 ger_df$age_cat <- cut(ger_df$age,breaks = c(0, 29.5, 39.5, 49.5, 59.5, 99), labels = c("18-29", "30-39", "40-49", "50-59", "60-80"), right = FALSE)
-ger_df$age_cat5 <- cut(ger_df$age,breaks = c(0, 29.5, 39.5, 49.5, 59.5, 99), labels = c("18-29ys", "30-39ys", "40-49ys", "50-59ys", "60+ys"), right = FALSE)
-ger_df$age_cat3 <- cut(ger_df$age,breaks = c(0, 39.5, 59.5, 99), labels = c("18-39ys", "40-59ys", "60+ys"), right = FALSE)
-ger_df$age_cat2 <- cut(ger_df$age,breaks = c(0, 49.5, 99), labels = c("18-49ys", "50+ys"), right = FALSE)
+ger_df$age_cat5 <- cut(ger_df$age,breaks = c(0, 29.5, 39.5, 49.5, 59.5, 99), labels = c("18-29yrs", "30-39yrs", "40-49yrs", "50-59yrs", "60+yrs"), right = FALSE)
+ger_df$age_cat3 <- cut(ger_df$age,breaks = c(0, 39.5, 59.5, 99), labels = c("18-39yrs", "40-59yrs", "60+yrs"), right = FALSE)
+ger_df$age_cat2 <- cut(ger_df$age,breaks = c(0, 49.5, 99), labels = c("18-49yrs", "50+yrs"), right = FALSE)
 
 # female
 ger_df$female <- ger_df$gender == 2
@@ -163,7 +194,7 @@ ger_df$cases90perc <- ger_df$cases_per_100k >= cases90perc
 ger_df$cases90perc_cat2 <- ifelse(ger_df$cases90perc == TRUE, "Yes", "No")
 ger_df$urban <- ger_df$Typ == "Stadt"
 ger_df$urban_cat2 <- cut(as.numeric(ger_df$urban), breaks=c(-Inf, 0.5, Inf), labels=c("No", "Yes"))
-  
+
 # job status
 ger_df$at_work <- ger_df$job_status %in% c(2, 3, 5, 6) 
 ger_df$working_cat2 <- cut(as.numeric(ger_df$at_work), breaks=c(-Inf, 0.5, Inf), labels=c("No", "Yes"))
@@ -196,7 +227,7 @@ ger_df$trusts_hcs[ger_df$trust_hcs_cat3 == "Medium"] <- NA
 # concernedness about COVID-19 for themselves
 ger_df$covidconcerned_self <- ger_df$corona_concerned_1 - 1
 ger_df$covidconcerned_self_cat2 <- cut(ger_df$covidconcerned_self, breaks=c(-Inf, 1.5, Inf), labels=c("Low", "High"))
-  
+
 # concernedness about COVID-19 for family/friends
 ger_df$covidconcerned_famf <- ger_df$corona_concerned_2 - 1
 ger_df$covidconcerned_famf_cat2 <- cut(ger_df$covidconcerned_famf , breaks=c(-Inf, 1.5, Inf), labels=c("Low", "High"))
@@ -238,6 +269,9 @@ datacontrol_scale_fit <- psych::principal(filter(ger_df, wave == 1) %>% dplyr::s
 ger_df$datacontrol_score <- predict(datacontrol_scale_fit, dplyr::select(ger_df, data_control_1_rec, data_control_2_rec, data_control_3_rec))[,1]
 datacontrol_score_quantiles <- quantile(ger_df$datacontrol_score, probs = c(0, .33, .66, 1), na.rm = TRUE)
 ger_df$datacontrol_score_cat3 <- cut(ger_df$datacontrol_score,breaks = c(-Inf, datacontrol_score_quantiles[2], datacontrol_score_quantiles[3], Inf), labels = c("Low", "Medium", "High"), right = FALSE)
+datacontrol_score_quantiles <- quantile(ger_df$datacontrol_score, probs = c(0, .5, 1), na.rm = TRUE)
+ger_df$datacontrol_score_cat2 <- cut(ger_df$datacontrol_score,breaks = c(-Inf, datacontrol_score_quantiles[2], Inf), labels = c("Low", "High"), right = FALSE)
+
 
 # digital literacy
 ger_df$digital_literacy_1_rec <- recode(as.numeric(ger_df$digital_literacy_1), `9` = 1, `15` = 2, `12` = 3, `15` = 4) 
@@ -276,7 +310,7 @@ riskybehav_scale_fit <- psych::principal(ger_df %>% dplyr::select(use_pubtranspo
 ger_df$riskybehav_score <- predict(riskybehav_scale_fit, dplyr::select(ger_df, use_pubtransport, visit_restaurant, visit_friends))[,1]
 riskybehav_score_quantiles <- quantile(ger_df$riskybehav_score, probs = c(0, .33, .66, 1), na.rm = TRUE)
 ger_df$riskybehav_score_cat3 <- cut(ger_df$riskybehav_score,breaks = c(-Inf, riskybehav_score_quantiles[2], riskybehav_score_quantiles[3], Inf), labels = c("Low", "Medium", "High"), right = FALSE)
-  
+
 # access to smartphone (dropped later because of perfect collinearity)
 ger_df$smartphone_access <- ger_df$smartphone %in% c(1, 2, 3)
 
@@ -291,17 +325,17 @@ ger_df$aha_compliance_cat2 <- ifelse(ger_df$aha_compliance == TRUE, "Yes", "No")
 
 # attention check
 ger_df$attcheck_pass <- ifelse(ger_df$attcheck_treatment_1 == 1 & 
-                                    ger_df$attcheck_treatment_11 == 1 &
-                                    is.na(ger_df$attcheck_treatment_2) & 
-                                    is.na(ger_df$attcheck_treatment_3) & 
-                                    is.na(ger_df$attcheck_treatment_4) & 
-                                    is.na(ger_df$attcheck_treatment_5) & 
-                                    is.na(ger_df$attcheck_treatment_6) & 
-                                    is.na(ger_df$attcheck_treatment_7) & 
-                                    is.na(ger_df$attcheck_treatment_8) & 
-                                    is.na(ger_df$attcheck_treatment_9) & 
-                                    is.na(ger_df$attcheck_treatment_10) & 
-                                    is.na(ger_df$attcheck_treatment_12), TRUE, FALSE)
+                                 ger_df$attcheck_treatment_11 == 1 &
+                                 is.na(ger_df$attcheck_treatment_2) & 
+                                 is.na(ger_df$attcheck_treatment_3) & 
+                                 is.na(ger_df$attcheck_treatment_4) & 
+                                 is.na(ger_df$attcheck_treatment_5) & 
+                                 is.na(ger_df$attcheck_treatment_6) & 
+                                 is.na(ger_df$attcheck_treatment_7) & 
+                                 is.na(ger_df$attcheck_treatment_8) & 
+                                 is.na(ger_df$attcheck_treatment_9) & 
+                                 is.na(ger_df$attcheck_treatment_10) & 
+                                 is.na(ger_df$attcheck_treatment_12), TRUE, FALSE)
 
 
 
@@ -349,7 +383,7 @@ ger_df$app_know2_index <- dplyr::select(ger_df, app_know_icon_cor, app_know_scre
 # sharing behavior: FB, Twitter, WhatsApp, Email
 clicks_df <-  dplyr::select(ger_df, clicked_fb, clicked_tw, clicked_whatsapp, clicked_mailto) %>% mutate(across(where(is.character),as.numeric))
 ger_df$app_sharing_clicks <- rowSums(clicks_df)
-  
+
 # information behavior: information resources, App Store / Google Playstore
 clicks2_df <-  dplyr::select(ger_df, clicked_appstore, clicked_playstore, clicked_vbzentrale, clicked_ccc, clicked_merkel, clicked_erklaervideo) %>% mutate(across(where(is.character),as.numeric))
 ger_df$app_info_clicks <- rowSums(clicks2_df)
@@ -375,8 +409,8 @@ for (i in outcome_vars){
 
 # age
 tracking_sociodem_df$age_cat <- cut(tracking_sociodem_df$age,breaks = c(0, 29.5, 39.5, 49.5, 59.5, 99), labels = c("18-29", "30-39", "40-49", "50-59", "60-80"), right = FALSE)
-tracking_sociodem_df$age_cat3 <- cut(tracking_sociodem_df$age,breaks = c(0, 39.5, 59.5, 99), labels = c("18-39ys", "40-59ys", "60+ys"), right = FALSE)
-
+tracking_sociodem_df$age_cat3 <- cut(tracking_sociodem_df$age,breaks = c(0, 39.5, 59.5, 99), labels = c("18-39yrs", "40-59yrs", "60+yrs"), right = FALSE)
+tracking_sociodem_df$age10 <- tracking_sociodem_df$age/10
 
 # female
 tracking_sociodem_df$female <- tracking_sociodem_df$gender == 2
@@ -384,6 +418,9 @@ tracking_sociodem_df$female <- tracking_sociodem_df$gender == 2
 # education, categorical
 tracking_sociodem_df$education[tracking_sociodem_df$education == 4] <- 1
 tracking_sociodem_df$educ_cat <- cut(tracking_sociodem_df$education, breaks=c(0, 1.5, 2.5, Inf), labels=c("lo", "mid", "hi"))
+tracking_sociodem_df$edu_lo <- tracking_sociodem_df$educ_cat == "lo"
+tracking_sociodem_df$edu_mid <- tracking_sociodem_df$educ_cat == "mid"
+tracking_sociodem_df$edu_hi <- tracking_sociodem_df$educ_cat == "hi"
 
 # number of children
 tracking_sociodem_df$`household number of children`[tracking_sociodem_df$`household number of children` == 5] <- 4
@@ -403,6 +440,9 @@ tracking_sociodem_df <- tracking_sociodem_df %>% mutate(hhincome_rec = case_when
 ))
 tracking_sociodem_df$hhinc_cat <- recode_factor(as.factor(tracking_sociodem_df$hhincome_rec), `1` = "Under EUR 500", `2` = "EUR 500 to EUR 1,499", `3` = "EUR 1,500 to EUR 2,999", `4` = "EUR 3,000 to EUR 4,999", `5` = "EUR 5,000 to EUR 9,999", `6` = "EUR 10,000 or over")
 tracking_sociodem_df$hhinc_cat3 <- cut(tracking_sociodem_df$hhincome_rec, breaks=c(0, 2.5, 3.5, Inf), labels=c("<1.5k", "1.5-3k", ">3k"))
+tracking_sociodem_df$inc_lo <- tracking_sociodem_df$hhinc_cat3 == "<1.5k"
+tracking_sociodem_df$inc_mid <- tracking_sociodem_df$hhinc_cat3 == "1.5-3k"
+tracking_sociodem_df$inc_hi <- tracking_sociodem_df$hhinc_cat3 == ">3k"
 
 # job status
 tracking_sociodem_df$at_work <- tracking_sociodem_df$employment %in% c(1, 2, 3, 4, 5, 6)
@@ -411,7 +451,7 @@ tracking_sociodem_df$at_work <- tracking_sociodem_df$employment %in% c(1, 2, 3, 
 tracking_sociodem_df$smartphone_access <- TRUE
 
 # keep tracking-only participants only
-tracking_only_df <- filter(tracking_sociodem_df, psid %in% tracking_only_psids) %>% dplyr::select(psid, age_cat, female, educ_cat, children_num, hhinc_cat, at_work)
+tracking_only_df <- filter(tracking_sociodem_df, psid %in% tracking_only_psids) %>% dplyr::select(psid, age_cat, female, educ_cat, children_num, hhinc_cat, at_work, age10, edu_lo, edu_mid, edu_hi, inc_lo, inc_mid, inc_hi, children_yes)
 
 # create additional variables for merging
 tracking_only_df$psid <- as.character(tracking_only_df$psid)
@@ -491,31 +531,24 @@ ger_df_track_all <- merge(ger_df_track, tracking_df_all, by = "psid", all.x = TR
 # classify Apple device users to "survey-only" group ----------
 ## Background: due to a mistake by the tracking data provider, app usage on Apple devices was not tracked
 
-apple_remove <- TRUE
-
-ger_df_wide$apple <- ger_df_wide$device_manufacturer.1 == "Apple"
-ger_df_wide$datacontrol_score_cat3.1
-with(ger_df_wide, prop.table(table(datacontrol_score_cat3.1, apple)))
-
 if(apple_remove == TRUE) {
-
-# remove tracking-only Apple users
-ger_df_track_all <- filter(ger_df_track_all, !(sample_type == "trackingonly" & device_manufacturer == "Apple"))
-
-# make sample type of survey-tracking users with Apple devices "surveyonly"
-ger_df_track_all$sample_type[ger_df_track_all$device_manufacturer == "Apple" & ger_df_track_all$sample_type == "surveytracking"] <- "surveyonly"
-
-# apple device indicator
-ger_df_track_all$apple <- ger_df_track_all$device_manufacturer == "Apple"
-
-# set tracking variables to missing
-track_vars <- str_subset(names(ger_df_track_all), "^track_")
-for(i in track_vars){
-  ger_df_track_all[,i][ger_df_track_all$apple == TRUE] <- NA
-}
-}else{
+  
+  # remove tracking-only Apple users
+  ger_df_track_all <- filter(ger_df_track_all, !(sample_type == "trackingonly" & device_manufacturer == "Apple"))
+  
+  # make sample type of survey-tracking users with Apple devices "surveyonly"
+  ger_df_track_all$sample_type[ger_df_track_all$device_manufacturer == "Apple" & ger_df_track_all$sample_type == "surveytracking"] <- "surveyonly"
+  
+  # apple device indicator
   ger_df_track_all$apple <- ger_df_track_all$device_manufacturer == "Apple"
   
+  # set tracking variables to missing
+  track_vars <- str_subset(names(ger_df_track_all), "^track_")
+  for(i in track_vars){
+    ger_df_track_all[,i][ger_df_track_all$apple == TRUE] <- NA
+  }
+}else{
+  ger_df_track_all$apple <- ger_df_track_all$device_manufacturer == "Apple"
 }
 
 
@@ -626,8 +659,8 @@ tracking_vars <- c(
   "app_hyb_installed_at_w1", "app_hyb_installed_at_w2", "app_hyb_installed_at_w3",
   "app_hyb_installed_before_w1", "app_hyb_installed_before_w2", "app_hyb_installed_before_w3", 
   "app_hyb_installed_between_w1w2", "app_hyb_installed_between_w2w3"
-  )
-  
+)
+
 for (i in tracking_vars){
   ger_df_wide[,paste0(i, "_std")] <- ger_df_wide[,i]/sd(ger_df_wide[,i][which(ger_df_wide$treat.1 == "control")], na.rm = TRUE)
   ger_df_wide[,paste0(i, "_incent_std")] <- ger_df_wide[,i]/sd(ger_df_wide[,i][which(ger_df_wide$treat_incent.2 == "Control")], na.rm = TRUE)
@@ -732,7 +765,7 @@ motivation_vars <- c(
   "trust_gov.1", "trust_sci.1", "trust_hcs.1",
   "covidconcerned_self.1", "covidconcerned_famf.1",  
   "socresp_score.1", "selfint_score.1",
-   "datacontrol_score.1", "digliteracy_score.1"
+  "datacontrol_score.1", "digliteracy_score.1"
 )
 
 sociodem_vars_labels <- c(
@@ -742,14 +775,14 @@ sociodem_vars_labels <- c(
   "Household income:\nMedium", "Household income:\nHigh", 
   "Children"
 )
-  # risk factors and behavior
+# risk factors and behavior
 risk_vars_labels <- c(
   "Public transport\nusage", "Restaurant/pub\nvisit", "Friend/family\nvisit",
   "NPI compliance",
   "Precondition", "COVID case in network", 
   "Lives in high COVID\nincidence region", "Lives in\nurban region", "Working"
 )
-  # motivational factors
+# motivational factors
 motivation_vars_labels <- c(
   "Trust in government", "Trust in scientists", "Trust in HC system",
   "COVID threat perception:\nSelf", "COVID threat perception:\nFamily and Friends", 
@@ -759,19 +792,21 @@ motivation_vars_labels <- c(
 )
 
 covars_adapted_df <- data.frame(variable = c(sociodem_vars, risk_vars, motivation_vars),
-                                             var_label = c(sociodem_vars_labels, risk_vars_labels, motivation_vars_labels),
-                                             category = c(rep("Sociodemographics", length(sociodem_vars)),
-                                                          rep("Risk status and behavior", length(risk_vars)),
-                                                          rep("Motivational factors", length(motivation_vars))),
-                                             stringsAsFactors = FALSE)
+                                var_label = c(sociodem_vars_labels, risk_vars_labels, motivation_vars_labels),
+                                category = c(rep("Sociodemographics", length(sociodem_vars)),
+                                             rep("Risk status and behavior", length(risk_vars)),
+                                             rep("Motivational factors", length(motivation_vars))),
+                                stringsAsFactors = FALSE)
+
+
 
 
 
 # Save file -----------------------------------------------
-saveRDS(ger_df_wide, file = "../data/clean/ger_df_wide.RDS")
+saveRDS(ger_df_wide, file="../data/clean/ger_df_wide.RDS")
 
 
-# Save anonymized file ------------------------------------
+# Save anonymized files ------------------------------------
 
 ger_df_wide$id <- seq_len(nrow(ger_df_wide))
 ger_df_wide_ids <- dplyr::select(ger_df_wide, psid.1, id)
@@ -800,11 +835,24 @@ ger_df_wide <-
                   !starts_with("DistributionChannel") &
                   !starts_with("UserLanguage") &
                   !starts_with("Typ"))
-saveRDS(ger_df_wide, file = "../data/clean/ger_df_wide_an.RDS")
 
 
 tracking_df_all <- merge(tracking_df_all, ger_df_wide_ids, by.x = "psid", by.y = "psid.1")
-tracking_df_all <- dplyr::select(tracking_df_all, -psid, -device_id)
-saveRDS(tracking_df_all, file = "../data/clean/tracking_df_all_an.RDS")
+tracking_df_all <- dplyr::select(tracking_df_all, -psid, -device_id, -device_model)
+
+if(apple_remove == TRUE & tracking_period == "study"){
+  saveRDS(ger_df_wide, file = "../data/clean/ger_df_wide_an.RDS")
+  saveRDS(tracking_df_all, file = "../data/clean/tracking_df_all_an.RDS")
+}
+
+if(apple_remove == FALSE & tracking_period == "full"){
+  saveRDS(ger_df_wide, file = "../data/clean/ger_df_wide_apple_full_an.RDS")
+  saveRDS(tracking_df_all, file = "../data/clean/tracking_df_all_apple_full_an.RDS")
+}
+
+if(apple_remove == FALSE & tracking_period == "oct"){
+  saveRDS(ger_df_wide, file = "../data/clean/ger_df_wide_apple_oct_an.RDS")
+  saveRDS(tracking_df_all, file = "../data/clean/tracking_df_all_apple_oct_an.RDS")
+}
 
 

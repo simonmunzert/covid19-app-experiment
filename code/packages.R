@@ -6,7 +6,7 @@ p_needed <- c("texreg", # load first bc conflict with magrittr/tidyr
               "stargazer", "xtable", "summarytools", # format stuff
               "ggthemes", "hrbrthemes",  "RColorBrewer", "networkD3", "grid", "gridExtra", "viridis", "scales", "sjPlot", "cowplot", "patchwork", "colormap",  # plot stuff
               "survey", "arm", "misreport", "mvtnorm", "list", "MBESS", "pwr", "reldist", "estimatr", "glmnet", "ivdesc", "lemon", # stats stuff
-              "extrafont"
+              "extrafont","descr"
 )
 
 packages <- rownames(installed.packages())

@@ -4,7 +4,7 @@
 
 # load data --------------------------
 
-ger_df_wide <- readRDS("../data/clean/ger_df_wide_an.RDS")
+ger_df_wide <- readRDS("../data/clean/ger_df_wide.RDS")
 
 
 
@@ -25,6 +25,14 @@ h_tc_1a_pooled <- run_models(trt = "treat_any.1", dv, dv_pre, covars, D, dat_sur
 h_tc_1a_prosoc <- run_models(trt = "treat_prosoc.1", dv, dv_pre, covars, D, filter(dat_surveytracking, treat.1 != "selfinterest"))
 h_tc_1a_selfint <- run_models(trt = "treat_selfint.1", dv, dv_pre, covars, D, filter(dat_surveytracking, treat.1 != "prosocial"))
 h_tt_1a <- run_models(trt = "treat_prosoc.1", dv, dv_pre, covars, D, filter(dat_surveytracking, treat.1 != "control"))
+
+extract_model_stats <- function(model_obj){
+  data.frame(
+    itt_eff = sprintf("%.2f",round(coef(model_obj$itt[[1]])[2], 2)),
+    itt_ci = paste0("[", sprintf("%.2f",round(confint(model_obj$itt[[1]])[2,1], 2)), ", ", sprintf("%.2f",round(confint(model_obj$itt[[1]])[2,2], 2)), "]"),
+    itt_pval = minsig_fixer(round(model_obj$itt[[1]]$p.value[2], 2), latex = TRUE)
+  )
+}
 
 # run models, only with people in treatment groups who pass manipulation check
 h_tc_1a_pooled_check <- run_models(trt = "treat_any.1", dv, dv_pre, covars, D, filter(dat_surveytracking, manipcheck_pass.1 == TRUE))
@@ -340,7 +348,7 @@ dv_label <- "Tested after warning"
 h_tc_lik_get_test_pooled <- run_models(trt = "treat_any.1", dv, dv_pre, covars, D, ger_df_wide)
 h_tc_lik_get_test_prosoc <- run_models(trt = "treat_prosoc.1", dv, dv_pre, covars, D, filter(ger_df_wide, treat.1 != "selfinterest"))
 h_tc_lik_get_test_selfint <- run_models(trt = "treat_selfint.1", dv, dv_pre, covars, D, filter(ger_df_wide, treat.1 != "prosocial"))
-h_tt_get_test <- run_models(trt = "treat_prosoc.1", dv, dv_pre, covars, D, filter(ger_df_wide, treat.1 != "control"))
+h_tt_lik_get_test <- run_models(trt = "treat_prosoc.1", dv, dv_pre, covars, D, filter(ger_df_wide, treat.1 != "control"))
 
 # run models, only with people in treatment groups who pass manipulation check
 h_tc_lik_get_test_pooled_check <- run_models(trt = "treat_any.1", dv, dv_pre, covars, D, filter(ger_df_wide, manipcheck_pass.1 == TRUE))
@@ -352,7 +360,7 @@ h_tt_lik_get_test_check <- run_models(trt = "treat_prosoc.1", dv, dv_pre, covars
 format_latex(h_tc_lik_get_test_pooled, dv_label, trt_label = "Pooled vs. control", path = "../figures/h_tc_lik_get_test_pooled.tex")
 format_latex(h_tc_lik_get_test_prosoc, dv_label, trt_label = "Prosocial vs. control", path = "../figures/h_tc_lik_get_test_prosoc.tex")
 format_latex(h_tc_lik_get_test_selfint, dv_label, trt_label = "Self-interest vs. control", path = "../figures/h_tc_lik_get_test_selfint.tex")
-format_latex(h_tt_get_test, dv_label, trt_label = "Prosocial vs. self-interest", path = "../figures/h_tt_lik_get_test.tex")
+format_latex(h_tt_lik_get_test, dv_label, trt_label = "Prosocial vs. self-interest", path = "../figures/h_tt_lik_get_test.tex")
 format_latex(h_tc_lik_get_test_pooled_check, dv_label, trt_label = "Pooled vs. control", path = "../figures/h_tc_lik_get_test_pooled_check.tex")
 format_latex(h_tc_lik_get_test_prosoc_check, dv_label, trt_label = "Prosocial vs. control", path = "../figures/h_tc_lik_get_test_prosoc_check.tex")
 format_latex(h_tc_lik_get_test_selfint_check, dv_label, trt_label = "Self-interest vs. control", path = "../figures/h_tc_lik_get_test_selfint_check.tex")
@@ -677,7 +685,7 @@ dv_label <- "Tested after warning"
 h_tc_lik_get_test_pooled_w3 <- run_models(trt = "treat_any.1", dv, dv_pre, covars, D, ger_df_wide)
 h_tc_lik_get_test_prosoc_w3 <- run_models(trt = "treat_prosoc.1", dv, dv_pre, covars, D, filter(ger_df_wide, treat.1 != "selfinterest"))
 h_tc_lik_get_test_selfint_w3 <- run_models(trt = "treat_selfint.1", dv, dv_pre, covars, D, filter(ger_df_wide, treat.1 != "prosocial"))
-h_tt_get_test_w3 <- run_models(trt = "treat_prosoc.1", dv, dv_pre, covars, D, filter(ger_df_wide, treat.1 != "control"))
+h_tt_lik_get_test_w3 <- run_models(trt = "treat_prosoc.1", dv, dv_pre, covars, D, filter(ger_df_wide, treat.1 != "control"))
 
 # run models, only with people in treatment groups who pass manipulation check
 h_tc_lik_get_test_pooled_w3_check <- run_models(trt = "treat_any.1", dv, dv_pre, covars, D, filter(ger_df_wide, manipcheck_pass.1 == TRUE))
@@ -689,7 +697,7 @@ h_tt_lik_get_test_w3_check <- run_models(trt = "treat_prosoc.1", dv, dv_pre, cov
 format_latex(h_tc_lik_get_test_pooled_w3, dv_label, trt_label = "Pooled vs. control", path = "../figures/h_tc_lik_get_test_pooled_w3.tex")
 format_latex(h_tc_lik_get_test_prosoc_w3, dv_label, trt_label = "Prosocial vs. control", path = "../figures/h_tc_lik_get_test_prosoc_w3.tex")
 format_latex(h_tc_lik_get_test_selfint_w3, dv_label, trt_label = "Self-interest vs. control", path = "../figures/h_tc_lik_get_test_selfint_w3.tex")
-format_latex(h_tt_get_test_w3, dv_label, trt_label = "Prosocial vs. self-interest", path = "../figures/h_tt_lik_get_test_w3.tex")
+format_latex(h_tt_lik_get_test_w3, dv_label, trt_label = "Prosocial vs. self-interest", path = "../figures/h_tt_lik_get_test_w3.tex")
 format_latex(h_tc_lik_get_test_pooled_w3_check, dv_label, trt_label = "Pooled vs. control", path = "../figures/h_tc_lik_get_test_pooled_w3_check.tex")
 format_latex(h_tc_lik_get_test_prosoc_w3_check, dv_label, trt_label = "Prosocial vs. control", path = "../figures/h_tc_lik_get_test_prosoc_w3_check.tex")
 format_latex(h_tc_lik_get_test_selfint_w3_check, dv_label, trt_label = "Self-interest vs. control", path = "../figures/h_tc_lik_get_test_selfint_w3_check.tex")
@@ -729,11 +737,44 @@ format_latex(h_tt_lik_rep_result_w3_check, dv_label, trt_label = "Prosocial vs. 
 
 
 
+### Export all results in one table ----------------------
+
+table_out <- 
+bind_cols(outcome_vec <- c("Uptake (tracked)", "Uptake (hybrid)", "Uptake (reported)", "Knowledge", "Positive attitudes", "Message sharing (tracked)", "Information lookup (tracked)", "Bluetooth active (reported)", "Test/quarantine if given\nrisk warning (reported)", "Notify app if tested\npositive (reported)"),
+map(list(h_tc_1b_pooled, h_tc_1c_pooled, h_tc_2_pooled, h_tc_5_pooled, h_tc_6_pooled, h_tc_7_pooled, h_tc_8_pooled, h_tc_3_pooled, h_tc_lik_get_test_pooled, h_tc_lik_rep_result_pooled), extract_model_stats) %>% bind_rows(),
+map(list(h_tc_1b_prosoc, h_tc_1c_prosoc, h_tc_2_prosoc, h_tc_5_prosoc, h_tc_6_prosoc, h_tc_7_prosoc, h_tc_8_prosoc, h_tc_3_prosoc, h_tc_lik_get_test_prosoc, h_tc_lik_rep_result_prosoc), extract_model_stats) %>% bind_rows(),
+map(list(h_tc_1b_selfint, h_tc_1c_selfint, h_tc_2_selfint, h_tc_5_selfint, h_tc_6_selfint, h_tc_7_selfint, h_tc_8_selfint, h_tc_3_selfint, h_tc_lik_get_test_selfint, h_tc_lik_rep_result_selfint), extract_model_stats) %>% bind_rows(),
+map(list(h_tt_1b, h_tt_1c, h_tt_2, h_tt_5, h_tt_6, h_tt_7, h_tt_8, h_tt_3, h_tt_lik_get_test, h_tt_lik_rep_result), extract_model_stats) %>% bind_rows()
+)
+xtable(table_out)
+
+message_effects_xtab <- xtable(table_out, digits = 2, label = "tab:message-effects")
+print(message_effects_xtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top", file = "../figures/message-effects.tex")
+
+
+table_out <- 
+  bind_cols(outcome_vec <- c("Uptake (tracked)", "Uptake (hybrid)", "Uptake (reported)", "Knowledge", "Positive attitudes", "Message sharing (tracked)", "Information lookup (tracked)", "Bluetooth active (reported)", "Test/quarantine if given\nrisk warning (reported)", "Notify app if tested\npositive (reported)"),
+            map(list(h_tc_1b_pooled, h_tc_1c_pooled, h_tc_2_pooled, h_tc_5_pooled, h_tc_6_pooled, h_tc_7_pooled, h_tc_8_pooled, h_tc_3_pooled, h_tc_lik_get_test_pooled, h_tc_lik_rep_result_pooled), extract_model_stats) %>% bind_rows(),
+            map(list(h_tc_1b_prosoc, h_tc_1c_prosoc, h_tc_2_prosoc, h_tc_5_prosoc, h_tc_6_prosoc, h_tc_7_prosoc, h_tc_8_prosoc, h_tc_3_prosoc, h_tc_lik_get_test_prosoc, h_tc_lik_rep_result_prosoc), extract_model_stats) %>% bind_rows())
+xtable(table_out)
+
+message_effects_xtab <- xtable(table_out, digits = 2, label = "tab:message-effects-1")
+print(message_effects_xtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top", file = "../figures/message-effects-1.tex")
+
+table_out <- 
+  bind_cols(outcome_vec <- c("Uptake (tracked)", "Uptake (hybrid)", "Uptake (reported)", "Knowledge", "Positive attitudes", "Message sharing (tracked)", "Information lookup (tracked)", "Bluetooth active (reported)", "Test/quarantine if given\nrisk warning (reported)", "Notify app if tested\npositive (reported)"),
+            map(list(h_tc_1b_selfint, h_tc_1c_selfint, h_tc_2_selfint, h_tc_5_selfint, h_tc_6_selfint, h_tc_7_selfint, h_tc_8_selfint, h_tc_3_selfint, h_tc_lik_get_test_selfint, h_tc_lik_rep_result_selfint), extract_model_stats) %>% bind_rows(),
+            map(list(h_tt_1b, h_tt_1c, h_tt_2, h_tt_5, h_tt_6, h_tt_7, h_tt_8, h_tt_3, h_tt_lik_get_test, h_tt_lik_rep_result), extract_model_stats) %>% bind_rows())
+xtable(table_out)
+
+message_effects_xtab <- xtable(table_out, digits = 2, label = "tab:message-effects-2")
+print(message_effects_xtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top", file = "../figures/message-effects-2.tex")
 
 
 
 
-### Test of heterogeneity hypotheses ----------------------
+
+### Test of heterogeneity hypotheses, pre-registered ----------------------
 
 dv_vec <- c("app_track_installed_before_w2_std", "app_hyb_installed_before_w2_std", "app_rep_installed_before_w2_std", "app_know_index_std.2", "att_scale_score_std.2", "app_sharing_clicks_std.1", "app_info_clicks_std.1", "app_bluetooth_act_std.2", "app_test_warning_std.2", "app_submit_positive_result_std.2")
 dv_pre_vec <- c("app_track_installed_before_w1", "app_hyb_installed_before_w1", "app_rep_installed_before_w1", NA, "att_scale_score_std.1", NA, NA, "app_bluetooth_act.1", "app_test_warning.1", "app_submit_positive_result.1")
@@ -743,6 +784,9 @@ dv_labels <- c("Uptake (tracked)", "Uptake (hybrid)", "Uptake (reported)", "Know
 
 het_prosoc_list <- list()
 het_prosoc_effect <- character()
+het_prosoc_results <- list()
+het_prosoc_results_nf <- list()
+
 for (i in seq_along(dv_vec)){
   dv <- dv_vec[i]
   dv_pre <- dv_pre_vec[i]
@@ -751,12 +795,19 @@ for (i in seq_along(dv_vec)){
                     moderator = "socresp_score.1", trt = "treat_prosoc.1",
                     data = filter(ger_df_wide, treat.1 != "selfinterest")))
   het_prosoc_effect[i] <- try(het_prosoc_list[[i]][[2]])
+  het_prosoc_results[[i]] <- het_prosoc_list[[i]][[3]]
+  het_prosoc_results_nf[[i]] <- het_prosoc_list[[i]][[4]]
+  
 }
+
 
 ### H-TT-2: Subjects with high levels of self-interest will show higher treatment effects in the self-interest treatment than subjects with low levels of self-interest.
 
 het_selfint_list <- list()
 het_selfint_effect <- character()
+het_selfint_results <- list()
+het_selfint_results_nf <- list()
+
 for (i in seq_along(dv_vec)){
   dv <- dv_vec[i]
   dv_pre <- dv_pre_vec[i]
@@ -765,13 +816,58 @@ for (i in seq_along(dv_vec)){
                                                 moderator = "selfint_score.1", trt = "treat_selfint.1",
                                                 data = filter(ger_df_wide, treat.1 != "prosocial")))
   het_selfint_effect[i] <- try(het_selfint_list[[i]][[2]])
+  het_selfint_results[[i]] <- het_selfint_list[[i]][[3]]
+  het_selfint_results_nf[[i]] <- het_selfint_list[[i]][[4]]
 }
 
+# print to latex
+table_out <-   bind_cols(dv_labels, bind_rows(het_prosoc_results), bind_rows(het_selfint_results))
+xtable(table_out)
+
+message_effects_het_xtab <- xtable(table_out, digits = 2, label = "tab:message-effects-het-prereg")
+print(message_effects_het_xtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top", file = "../figures/message-effects-het-1-prereg.tex")
+
+
+
+
+# Figure (EDIT_LUKAS)
+df_het_prosoc_res <- bind_cols(dv_labels, 
+                               bind_rows(het_prosoc_results_nf)) %>%
+                              remove_rownames() %>%
+                              rename("dv"="...1") %>%
+                              mutate("int" = "Pro-Social Message X \n Social responsibility score")
+  
+df_het_selfint_res <- bind_cols(dv_labels, 
+                               bind_rows(het_selfint_results_nf)) %>%
+  remove_rownames() %>%
+  rename("dv"="...1") %>%
+  mutate("int" = "Self-interest message X \n Self-interest score")
+
+
+df_het_res <- bind_rows(df_het_prosoc_res,df_het_selfint_res)
+
+ggplot(df_het_res) +
+  geom_pointrange(aes(x=dv,y=itt_eff, 
+                      ymin=itt_ci_low, 
+                      ymax=itt_ci_high), size=1) +
+  coord_flip() +
+  geom_hline(yintercept=0,alpha=0.2,col="red") +
+  facet_grid(~ int) + 
+  xlab("") + ylab("") +
+  theme(text = element_text(size=20))
+
+ggsave("../figures/experiments-effects-itt-het-ger.pdf", height = 7, width = 9)
+
+### Test of heterogeneity hypotheses, not pre-registered ----------------------
 
 ### H-App-Het (not pre-registered): Subjects that had not used the app before will show higher treatment effects than subjects who had used the app before.
 
 het_appuse_list <- list()
 het_appuse_effect <- character()
+het_appuse_results <- list()
+het_appuse_results_nf <- list()
+
+
 for (i in seq_along(dv_vec)){
   dv <- dv_vec[i]
   dv_pre <- dv_pre_vec[i]
@@ -783,6 +879,9 @@ for (i in seq_along(dv_vec)){
   if(str_detect(dv_vec[i], "installed")){
     het_appuse_effect[i] <- ""
   }
+  het_appuse_results[[i]] <- het_appuse_list[[i]][[3]]
+  het_appuse_results_nf[[i]] <- het_appuse_list[[i]][[4]]
+  
 }
 
 
@@ -790,20 +889,29 @@ for (i in seq_along(dv_vec)){
 
 het_age_list <- list()
 het_age_effect <- character()
+het_age_results <- list()
+het_age_results_nf <- list()
+
 for (i in seq_along(dv_vec)){
   dv <- dv_vec[i]
   dv_pre <- dv_pre_vec[i]
   if(is.na(dv_pre)){ dv_pre <- NULL}
   het_age_list[[i]] <- try(heterogeneous_itt(dv = dv, dv_pre = dv_pre, covars = covars,
-                                                moderator = "age.1", trt = "treat_any.1",
+                                                moderator = "age10.1", trt = "treat_any.1",
                                                 data = ger_df_wide))
   het_age_effect[i] <- try(het_age_list[[i]][[2]])
+  het_age_results[[i]] <- het_age_list[[i]][[3]]
+  het_age_results_nf[[i]] <- het_age_list[[i]][[4]]
+  
 }
 
 ### H-NPI-Het (not pre-registered): What's the moderating effect of general NPI compliance?
 
 het_npi_list <- list()
 het_npi_effect <- character()
+het_npi_results <- list()
+het_npi_results_nf <- list()
+
 for (i in seq_along(dv_vec)){
   dv <- dv_vec[i]
   dv_pre <- dv_pre_vec[i]
@@ -812,12 +920,18 @@ for (i in seq_along(dv_vec)){
                                              moderator = "aha_compliance_cat2.1", trt = "treat_any.1",
                                              data = ger_df_wide))
   het_npi_effect[i] <- try(het_npi_list[[i]][[2]])
+  het_npi_results[[i]] <- het_npi_list[[i]][[3]]
+  het_npi_results_nf[[i]] <- het_npi_list[[i]][[4]]
+  
 }
 
 ### H-GovTrust-Het (not pre-registered): What's the moderating effect of trust in government?
 
 het_govtrust_list <- list()
 het_govtrust_effect <- character()
+het_govtrust_results <- list()
+het_govtrust_results_nf <- list()
+
 for (i in seq_along(dv_vec)){
   dv <- dv_vec[i]
   dv_pre <- dv_pre_vec[i]
@@ -826,13 +940,41 @@ for (i in seq_along(dv_vec)){
                                              moderator = "trust_gov_cat2.1", trt = "treat_any.1",
                                              data = ger_df_wide))
   het_govtrust_effect[i] <- try(het_govtrust_list[[i]][[2]])
+  het_govtrust_results[[i]] <- het_govtrust_list[[i]][[3]]
+  het_govtrust_results_nf[[i]] <- het_govtrust_list[[i]][[4]]
 }
+
+
+### H-GovTrust-Het (not pre-registered): What's the moderating effect of data privacy attitudes?
+
+het_datacontrol_list <- list()
+het_datacontrol_effect <- character()
+het_datacontrol_results <- list()
+het_datacontrol_results_nf <- list()
+
+
+for (i in seq_along(dv_vec)){
+  dv <- dv_vec[i]
+  dv_pre <- dv_pre_vec[i]
+  if(is.na(dv_pre)){ dv_pre <- NULL}
+  het_datacontrol_list[[i]] <- try(heterogeneous_itt(dv = dv, dv_pre = dv_pre, covars = covars,
+                                                  moderator = "datacontrol_score_cat2.1", trt = "treat_any.1",
+                                                  data = ger_df_wide))
+  het_datacontrol_effect[i] <- try(het_datacontrol_list[[i]][[2]])
+  het_datacontrol_results[[i]] <- het_datacontrol_list[[i]][[3]]
+  het_datacontrol_results_nf[[i]] <- het_datacontrol_list[[i]][[4]]
+  
+}
+
 
 
 ### H-ThreatPerception-Het (not pre-registered): What's the moderating effect of COVID threat perception?
 
 het_threatfamf_list <- list()
 het_threatfamf_effect <- character()
+het_threatfamf_results <- list()
+het_threatfamf_results_nf <- list()
+
 for (i in seq_along(dv_vec)){
   dv <- dv_vec[i]
   dv_pre <- dv_pre_vec[i]
@@ -841,27 +983,25 @@ for (i in seq_along(dv_vec)){
                                                   moderator = "covidconcerned_famf_cat2.1", trt = "treat_any.1",
                                                   data = ger_df_wide))
   het_threatfamf_effect[i] <- try(het_threatfamf_list[[i]][[2]])
+  het_threatfamf_results[[i]] <- het_threatfamf_list[[i]][[3]]
+  het_threatfamf_results_nf[[i]] <- het_threatfamf_list[[i]][[4]]
 }
 
 
 # print to latex
-het_effects_df <- 
-  data.frame(Outcome = dv_labels,
-             Prosoc = het_prosoc_effect,
-             Selfint = het_selfint_effect,
-             stringsAsFactors = FALSE
-  )
-print(xtable(het_effects_df), include.rownames = FALSE)
+het_appuse_results[[1]] <- data.frame(itt_eff = "", itt_ci = "", itt_pval = "")
+het_appuse_results[[2]] <- data.frame(itt_eff = "", itt_ci = "", itt_pval = "")
+het_appuse_results[[3]] <- data.frame(itt_eff = "", itt_ci = "", itt_pval = "")
 
+table_out <-   bind_cols(dv_labels, bind_rows(het_appuse_results), bind_rows(het_age_results), bind_rows(het_npi_results))
+xtable(table_out)
 
-het_effects_df <- 
-  data.frame(Outcome = dv_labels,
-             Appuse = het_appuse_effect,
-             Age = het_age_effect,
-             NPI = het_npi_effect,
-             GovTrust = het_govtrust_effect,
-             stringsAsFactors = FALSE
-  )
-print(xtable(het_effects_df), include.rownames = FALSE)
+message_effects_het_xtab <- xtable(table_out, digits = 2, label = "tab:message-effects-het-2")
+print(message_effects_het_xtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top", file = "../figures/message-effects-het-2.tex")
 
+table_out <-   bind_cols(dv_labels, bind_rows(het_govtrust_results), bind_rows(het_datacontrol_results), bind_rows(het_threatfamf_results))
+xtable(table_out)
+
+message_effects_het_xtab <- xtable(table_out, digits = 2, label = "tab:message-effects-het-3")
+print(message_effects_het_xtab, type = "latex", sanitize.text.function = function(x){x}, size = "footnotesize", table.placement = "h!", include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top", file = "../figures/message-effects-het-3.tex")
 
